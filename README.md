@@ -1,4 +1,4 @@
-# doordash-eta-prediction
+# doordash-duration-prediction
 
 ## Problem Description
 
