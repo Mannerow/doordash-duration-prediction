@@ -7,6 +7,7 @@ import zipfile
 
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
 
 
 def dump_pickle(obj, filename: str):
@@ -79,9 +80,23 @@ def vectorize_and_split(train_dicts, target):
     
     return X_train, X_val, X_test, y_train, y_val, y_test, dv
 
+def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    # Define imputer for numerical columns
+    imputer = SimpleImputer(strategy='mean')
+    numerical_columns = df.select_dtypes(include=['number']).columns
+
+    # Apply imputer to numerical columns
+    df[numerical_columns] = imputer.fit_transform(df[numerical_columns])
+
+    # Drop rows with missing categorical values
+    df = df.dropna()
+
+    return df
+
 def preprocess(df: pd.DataFrame, target: str = 'delivery_duration'):
     """ Full preprocessing pipeline """
     df = create_delivery_duration(df)
+    df = handle_missing_values(df)
     df = remove_outliers(df, target)
     train_dicts, target = extract_features_and_target(df, target)
     X_train, X_val, X_test, y_train, y_val, y_test, dv = vectorize_and_split(train_dicts, target) 
