@@ -9,6 +9,9 @@ pandas = "*"
 matplotlib = "*"
 seaborn = "*"
 scikit-learn = "*"
+mlflow = "*"
+hyperopt = "*"
+xgboost = "*"
 
 [dev-packages]
 
