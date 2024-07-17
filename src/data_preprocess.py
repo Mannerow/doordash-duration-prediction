@@ -6,39 +6,90 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 import zipfile
 
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.model_selection import train_test_split
 
 
-# def dump_pickle(obj, filename: str):
-#     with open(filename, "wb") as f_out:
-#         return pickle.dump(obj, f_out)
+def dump_pickle(obj, filename: str):
+    with open(filename, "wb") as f_out:
+        return pickle.dump(obj, f_out)
 
 
-# def read_dataframe(filename: str):
-#     df = pd.read_parquet(filename)
+def read_dataframe(raw_data_path: str):
+    csv_file_path = os.path.join(raw_data_path, 'historical_data.csv')
 
-#     df['duration'] = df['lpep_dropoff_datetime'] - df['lpep_pickup_datetime']
-#     df.duration = df.duration.apply(lambda td: td.total_seconds() / 60)
-#     df = df[(df.duration >= 1) & (df.duration <= 60)]
+    # Load the CSV file into a pandas DataFrame
+    df = pd.read_csv(csv_file_path)
+    return df
 
-#     categorical = ['PULocationID', 'DOLocationID']
-#     df[categorical] = df[categorical].astype(str)
+def create_delivery_duration(df: pd.DataFrame) -> pd.DataFrame:
+    """ Create delivery duration feature in minutes """
+    # Convert 'created_at' and 'actual_delivery_time' to datetime
+    df['created_at'] = pd.to_datetime(df['created_at'])
+    df['actual_delivery_time'] = pd.to_datetime(df['actual_delivery_time'])
 
-#     return df
+    # Calculate delivery_duration in minutes
+    df['delivery_duration'] = (df['actual_delivery_time'] - df['created_at']).dt.total_seconds() / 60
+    return df
 
+def remove_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
+    """ Remove outliers from column """
+    # Calculate summary statistics
+    summary_stats = df[column].describe()
 
-# def preprocess(df: pd.DataFrame, dv: DictVectorizer, fit_dv: bool = False):
-#     df['PU_DO'] = df['PULocationID'] + '_' + df['DOLocationID']
-#     categorical = ['PU_DO']
-#     numerical = ['trip_distance']
-#     dicts = df[categorical + numerical].to_dict(orient='records')
-#     if fit_dv:
-#         X = dv.fit_transform(dicts)
-#     else:
-#         X = dv.transform(dicts)
-#     return X, dv
+    # Calculate the interquartile range (IQR)
+    Q1 = summary_stats['25%']
+    Q3 = summary_stats['75%']
+    IQR = Q3 - Q1
 
+    # Define outlier thresholds
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
 
-def download_data(raw_data_path):
+    # Filter out outliers
+    filtered_df = df[(df['delivery_duration'] >= lower_bound) & (df['delivery_duration'] <= upper_bound)]
+
+    return filtered_df
+
+def extract_features_and_target(df: pd.DataFrame, target: str):
+    """ Extract features and target from DataFrame """
+    categorical_columns = ['created_at', 'actual_delivery_time', 'store_primary_category']
+    numerical_columns = [col for col in df.columns if col not in categorical_columns and col != target]
+    
+    # Drop the target column from the DataFrame
+    df_features = df.drop(columns=[target])
+
+    # Convert only categorical columns to string
+    df_features[categorical_columns] = df_features[categorical_columns].astype(str)
+
+    # Convert DataFrame to dictionary records
+    train_dicts = df_features.to_dict(orient='records')
+
+    return train_dicts, df[target].astype(float)
+
+def vectorize_and_split(train_dicts, target):
+    """ Vectorize features and split data into train, validation, and test sets. train: 0.8, val: 0.1, teset: 0.1 """
+    dv = DictVectorizer(sparse=True)
+    X = dv.fit_transform(train_dicts)
+    
+    # Split the data into train and test sets
+    X_train, X_temp, y_train, y_temp = train_test_split(X, target, test_size=0.2, random_state=42)
+    
+    # Further split the test set into val and test sets
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    
+    return X_train, X_val, X_test, y_train, y_val, y_test, dv
+
+def preprocess(df: pd.DataFrame, target: str = 'delivery_duration'):
+    """ Full preprocessing pipeline """
+    df = create_delivery_duration(df)
+    df = remove_outliers(df, target)
+    train_dicts, target = extract_features_and_target(df, target)
+    X_train, X_val, X_test, y_train, y_val, y_test, dv = vectorize_and_split(train_dicts, target) 
+
+    return X_train, X_val, X_test, y_train, y_val, y_test, dv
+
+#Downloads raw data from Kaggle to 'raw_data_path'
+def download_data(raw_data_path: str):
     # Initialize the Kaggle API
     api = KaggleApi()
     api.authenticate()
@@ -60,46 +111,27 @@ def download_data(raw_data_path):
 )
 @click.option(
     "--dest_path",
-    default="./data/processed_data",  # Default path for the resulting files
+    default="../data/processed_data",  # Default path for the resulting files
     help="Location where the resulting files will be saved"
 )
 def run_data_prep(raw_data_path: str, dest_path: str):
 
     download_data(raw_data_path=raw_data_path)
 
+    df = read_dataframe(raw_data_path)
 
-    # Load parquet files
-    # df_train = read_dataframe(
-    #     os.path.join(raw_data_path, f"{dataset}_tripdata_2023-01.parquet")
-    # )
-    # df_val = read_dataframe(
-    #     os.path.join(raw_data_path, f"{dataset}_tripdata_2023-02.parquet")
-    # )
-    # df_test = read_dataframe(
-    #     os.path.join(raw_data_path, f"{dataset}_tripdata_2023-03.parquet")
-    # )
-
-    # # Extract the target
-    # target = 'duration'
-    # y_train = df_train[target].values
-    # y_val = df_val[target].values
-    # y_test = df_test[target].values
-
-    # # Fit the DictVectorizer and preprocess data
-    # dv = DictVectorizer()
-    # X_train, dv = preprocess(df_train, dv, fit_dv=True)
-    # X_val, _ = preprocess(df_val, dv, fit_dv=False)
-    # X_test, _ = preprocess(df_test, dv, fit_dv=False)
+    # Preprocess the data
+    X_train, X_val, X_test, y_train, y_val, y_test, dv = preprocess(df, target='delivery_duration')
 
     # # Create dest_path folder unless it already exists
-    # os.makedirs(dest_path, exist_ok=True)
+    os.makedirs(dest_path, exist_ok=True)
 
+    print(f"Dumping Pickles to {dest_path}")
     # # Save DictVectorizer and datasets
-    # dump_pickle(dv, os.path.join(dest_path, "dv.pkl"))
-    # dump_pickle((X_train, y_train), os.path.join(dest_path, "train.pkl"))
-    # dump_pickle((X_val, y_val), os.path.join(dest_path, "val.pkl"))
-    # dump_pickle((X_test, y_test), os.path.join(dest_path, "test.pkl"))
-
+    dump_pickle(dv, os.path.join(dest_path, "dv.pkl"))
+    dump_pickle((X_train, y_train), os.path.join(dest_path, "train.pkl"))
+    dump_pickle((X_val, y_val), os.path.join(dest_path, "val.pkl"))
+    dump_pickle((X_test, y_test), os.path.join(dest_path, "test.pkl"))
 
 if __name__ == '__main__':
     run_data_prep()
