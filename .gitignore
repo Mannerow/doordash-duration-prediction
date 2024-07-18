@@ -163,3 +163,4 @@ cython_debug/
 kaggle.json
 data/
 backend.db
+src/mlruns
