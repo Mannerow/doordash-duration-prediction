@@ -102,26 +102,25 @@ def run_register_model(data_path: str, top_n: int):
         #print(f"Processing train run ID: {run.info.run_id} with params: {run.data.params}")
         train_and_log_model(data_path=data_path, params=run.data.params)
 
-    # Combine runs from both HPO and training experiments
-    all_runs = hpo_runs + train_runs
+    # Now get the best runs
+    experiment = client.get_experiment_by_name(BEST_MODELS_EXPERIMENT_NAME)
+    best_runs = client.search_runs(
+        experiment_ids=experiment.experiment_id,
+        run_view_type=ViewType.ACTIVE_ONLY,
+        max_results=top_n,
+        order_by=["metrics.test_rmse ASC"]
+    )
 
     # Print metrics for debugging
-    for run in all_runs:
+    for run in best_runs:
         print(f"Run ID: {run.info.run_id}, Metrics: {run.data.metrics}")
 
-    # # Filter runs to include only those with the 'test_rmse' metric
-    # valid_runs = [run for run in all_runs if "test_rmse" in run.data.metrics]
-
-    # if not valid_runs:
-    #     raise ValueError("No valid runs found with the test_rmse metric")
-
     # # Find the best run based on test RMSE
-    # best_run = min(valid_runs, key=lambda run: run.data.metrics["test_rmse"])
+    best_run = min(best_runs, key=lambda run: run.data.metrics["test_rmse"])
 
-    # # Register the best model
-    # model_uri = f"runs:/{best_run.info.run_id}/model"
-    # mlflow.register_model(model_uri=model_uri, name="doordash_best_model")
-
+    # # Register the best 
+    model_uri = f"runs:/{best_run.info.run_id}/model"
+    mlflow.register_model(model_uri=model_uri, name="doordash_best_model")
 
 if __name__ == '__main__':
     run_register_model()
