@@ -49,7 +49,6 @@ def run_optimization(data_path: str, num_trials: int):
 
     def objective(params):
         model_type = params['type']
-        del params['type']
 
         with mlflow.start_run():
             mlflow.set_tag("model", model_type)
@@ -64,7 +63,7 @@ def run_optimization(data_path: str, num_trials: int):
             model.fit(X_train, y_train)
             y_pred = model.predict(X_val)
             rmse = mean_squared_error(y_val, y_pred, squared=False)
-            mlflow.log_metric("rmse", rmse)
+            mlflow.log_metric("val_rmse", rmse)
 
         return {'loss': rmse, 'status': STATUS_OK}
 

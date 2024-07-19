@@ -52,16 +52,18 @@ def run_train(data_path: str):
 
             # Log model parameters
             if model_name == "XGBRegressor":
-                mlflow.log_params({"max_depth": 5, "n_estimators": 50, "random_state": RANDOM_STATE})
+                mlflow.log_params({"type": model_name, "max_depth": 5, "n_estimators": 50, "random_state": RANDOM_STATE})
             elif model_name == "Ridge":
-                mlflow.log_params({"alpha": 0.5, "random_state": RANDOM_STATE})
+                mlflow.log_params({"type": model_name, "alpha": 0.5, "random_state": RANDOM_STATE})
             # LinearRegression does not have hyperparameters in this example
+            else:
+                mlflow.log_params({"type": model_name})
 
             model.fit(X_train, y_train)
             y_pred = model.predict(X_val)
 
             rmse = mean_squared_error(y_val, y_pred, squared=False)
-            mlflow.log_metric("rmse", rmse)
+            mlflow.log_metric("val_rmse", rmse)
 
             print(f"{model_name} RMSE: {rmse}")
 
