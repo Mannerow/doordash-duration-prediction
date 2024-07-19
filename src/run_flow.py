@@ -1,4 +1,4 @@
-from prefect import task, Flow
+from prefect import task, flow
 import subprocess
 
 @task
@@ -7,6 +7,7 @@ def run_train():
     if result.returncode != 0:
         raise Exception(f"train.py failed: {result.stderr}")
     print(result.stdout)
+    return result.stdout  # Return value to be used as input in dependent tasks if needed
 
 @task
 def run_hpo():
@@ -14,6 +15,7 @@ def run_hpo():
     if result.returncode != 0:
         raise Exception(f"hpo.py failed: {result.stderr}")
     print(result.stdout)
+    return result.stdout  # Return value to be used as input in dependent tasks if needed
 
 @task
 def run_register_model():
@@ -21,19 +23,14 @@ def run_register_model():
     if result.returncode != 0:
         raise Exception(f"register_model.py failed: {result.stderr}")
     print(result.stdout)
+    return result.stdout  # Return value to be used as input in dependent tasks if needed
 
-# Define the flow
-flow = Flow("ML Workflow")
-
-# Add tasks to the flow
-train_task = run_train()
-hpo_task = run_hpo(upstream_tasks=[train_task])
-register_model_task = run_register_model(upstream_tasks=[hpo_task])
-
-flow.add_task(train_task)
-flow.add_task(hpo_task)
-flow.add_task(register_model_task)
+@flow
+def ml_workflow():
+    train_result = run_train()
+    hpo_result = run_hpo(wait_for=[train_result])  # Dependency managed by wait_for
+    register_model_result = run_register_model(wait_for=[hpo_result])  # Dependency managed by wait_for
 
 # Run the flow
 if __name__ == "__main__":
-    flow.run()
+    ml_workflow()
