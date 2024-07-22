@@ -2,6 +2,14 @@ from prefect import task, flow
 import subprocess
 
 @task
+def run_data_preprocess():
+    result = subprocess.run(['python', 'data_preprocess.py'], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"data_preprocess.py failed: {result.stderr}")
+    print(result.stdout)
+    return result.stdout  # Return value to be used as input in dependent tasks if needed
+
+@task
 def run_train():
     result = subprocess.run(['python', 'train.py'], capture_output=True, text=True)
     if result.returncode != 0:
@@ -25,11 +33,21 @@ def run_register_model():
     print(result.stdout)
     return result.stdout  # Return value to be used as input in dependent tasks if needed
 
+@task
+def run_score_batch():
+    result = subprocess.run(['python', 'score_batch.py'], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"score_batch.py failed: {result.stderr}")
+    print(result.stdout)
+    return result.stdout  # Return value to be used as input in dependent tasks if needed
+
 @flow
 def ml_workflow():
-    train_result = run_train()
+    data_preprocess_result = run_data_preprocess()
+    train_result = run_train(wait_for=[data_preprocess_result])
     hpo_result = run_hpo(wait_for=[train_result])  # Dependency managed by wait_for
     register_model_result = run_register_model(wait_for=[hpo_result])  # Dependency managed by wait_for
+    score_batch_result = run_score_batch(wait_for=[register_model_result])  # Dependency managed by wait_for
 
 # Run the flow
 if __name__ == "__main__":

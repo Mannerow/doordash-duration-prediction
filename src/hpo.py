@@ -39,7 +39,7 @@ def load_pickle(filename: str):
 )
 @click.option(
     "--num_trials",
-    default=15,
+    default=5,
     help="Number of parameter evaluations for the optimizer to explore"
 )
 def run_optimization(data_path: str, num_trials: int):
@@ -48,7 +48,7 @@ def run_optimization(data_path: str, num_trials: int):
     X_val, y_val = load_pickle(os.path.join(data_path, "val.pkl"))
 
     def objective(params):
-        model_type = params['type']
+        model_type = params.pop('type')  # Remove 'type' from params
 
         with mlflow.start_run():
             mlflow.set_tag("model", model_type)
@@ -59,6 +59,7 @@ def run_optimization(data_path: str, num_trials: int):
             else:
                 raise ValueError(f"Unknown model type: {model_type}")
 
+            params['type'] = model_type #Add type again, need it for the register model script
             mlflow.log_params(params)
             model.fit(X_train, y_train)
             y_pred = model.predict(X_val)
@@ -76,12 +77,12 @@ def run_optimization(data_path: str, num_trials: int):
             'subsample': hp.uniform('subsample', 0.8, 1.0),
             'colsample_bytree': hp.uniform('colsample_bytree', 0.8, 1.0),
             'random_state': RANDOM_STATE
+        },
+        {
+            'type': 'Ridge',
+            'alpha': hp.loguniform('alpha', np.log(0.001), np.log(1)),  # Narrower range for alpha
+            'random_state': RANDOM_STATE
         }
-        # {
-        #     'type': 'Ridge',
-        #     'alpha': hp.loguniform('alpha', np.log(0.01), np.log(1)),  # Narrower range for alpha
-        #     'random_state': RANDOM_STATE
-        # }
     ])
 
     rstate = np.random.default_rng(RANDOM_STATE)  # for reproducible results
