@@ -5,7 +5,9 @@ from scipy.sparse import csr_matrix
 import sys
 import click
 import uuid
-
+import boto3
+from botocore.exceptions import ClientError
+import utils
 
 from mlflow.tracking import MlflowClient
 import mlflow.pyfunc
@@ -19,13 +21,10 @@ load_dotenv()  # This will load all the env variables from the .env file
 # Fetch the tracking URI from environment variables
 mlflow_tracking_uri = os.getenv('MLFLOW_TRACKING_URI')
 
+region = os.getenv('AWS_DEFAULT_REGION')
+
 # Set the MLflow tracking URI
 mlflow.set_tracking_uri(mlflow_tracking_uri)
-
-# def csr_to_dataframe(csr_matrix, feature_names):
-#     """Converts a CSR (Compressed Sparse Row) matrix to a Pandas DataFrame."""
-#     df = pd.DataFrame(csr_matrix.toarray(), columns=feature_names)
-#     return df
 
 def generate_uuids(n):
     trip_ids = []
@@ -33,25 +32,31 @@ def generate_uuids(n):
         trip_ids.append(str(uuid.uuid4()))
     return trip_ids
 
-def load_pickle(filename: str):
-    with open(filename, "rb") as f_in:
-        return pickle.load(f_in)
-
-def load_most_recent_model(model_bucket, model_name):
+def load_most_recent_model(model_bucket, model_name, experiment_name):
     client = MlflowClient()
-    model_versions = client.search_model_versions(f"name='{model_name}'")
-    
-    if not model_versions:
-        raise ValueError("No model versions found for given model name.")
 
-    # Sort versions by creation time, assuming version information includes creation timestamp
-    most_recent_version = max(model_versions, key=lambda version: version.creation_timestamp)
+    # Get experiment ID from the experiment name
+    experiment = client.get_experiment_by_name(experiment_name)
+    if experiment is None:
+        raise ValueError(f"No experiment found with name '{experiment_name}'")
     
-    # Construct the S3 path using the retrieved most recent version
-    logged_model = f"s3://{model_bucket}/{most_recent_version.version}/{most_recent_version.run_id}/artifacts/model"
+    experiment_id = experiment.experiment_id
+
+    # Get all runs for the experiment
+    runs = client.search_runs(experiment_ids=[experiment_id], order_by=["metric.test_rmse ASC"], max_results=1)
+
+    if not runs:
+        raise ValueError("No runs found for the given experiment ID.")
+
+    # Get the most recent run
+    most_recent_run = runs[0]
+    run_id = most_recent_run.info.run_id
+
+    # Construct the S3 path using the experiment ID and run ID
+    logged_model = f"s3://{model_bucket}/{experiment_id}/{run_id}/artifacts/model"
     print(f"Logged Model = {logged_model}")
     model = mlflow.pyfunc.load_model(logged_model)
-    return model, most_recent_version.run_id
+    return model, run_id
 
 def save_results(df, y_pred, y_test, run_id, output_file):
     trip_ids = generate_uuids(df.shape[0])
@@ -63,28 +68,22 @@ def save_results(df, y_pred, y_test, run_id, output_file):
         'model_version': run_id
     })
     
-    # feature_names = [
-    # 'market_id',
-    # 'store_id',
-    # 'store_primary_category',
-    # 'order_protocol',
-    # 'total_items',
-    # 'subtotal',
-    # 'num_distinct_items',
-    # 'min_item_price',
-    # 'max_item_price',
-    # 'total_onshift_dashers',
-    # 'total_busy_dashers',
-    # 'total_outstanding_orders',
-    # 'estimated_order_place_duration',
-    # 'estimated_store_to_consumer_driving_duration'
-    # ]
+    dv = utils.load_pickle("../data/processed_data/dv.pkl")
 
-    # # Ensure df is a DataFrame, not a csr_matrix
-    # if isinstance(df, csr_matrix):
-    #     df = csr_to_dataframe(df, feature_names)  # Convert csr_matrix to DataFrame if necessary
+    # Ensure df is a DataFrame, not a csr_matrix
+    if isinstance(df, csr_matrix):
+        # Convert sparse matrix to dense matrix
+        X_dense = df.toarray()
+        
+        # Retrieve feature names from DictVectorizer
+        feature_names = dv.get_feature_names_out()
+        
+        # Create DataFrame from dense matrix
+        df_dense = pd.DataFrame(X_dense, columns=feature_names)
+    else:
+        df_dense = df
     
-    final_df = pd.concat([df.reset_index(drop=True), results_df.reset_index(drop=True)], axis=1)
+    final_df = pd.concat([df_dense.reset_index(drop=True), results_df.reset_index(drop=True)], axis=1)
 
     # Print the first few rows of the final DataFrame for debugging
     print("First few rows of the final DataFrame for debugging:")
@@ -92,16 +91,45 @@ def save_results(df, y_pred, y_test, run_id, output_file):
 
     final_df.to_parquet(output_file, index=False)
 
+def create_s3_bucket(bucket_name, region=None):
+    # Initialize a session using Amazon S3
+    s3_client = boto3.client('s3', region_name=region)
+    
+    # Check if the bucket exists
+    try:
+        s3_client.head_bucket(Bucket=bucket_name)
+        print(f"Bucket '{bucket_name}' already exists.")
+    except ClientError as e:
+        # If the bucket does not exist, create it
+        error_code = int(e.response['Error']['Code'])
+        if error_code == 404:
+            try:
+                if region is None or region == 'us-east-1':
+                    s3_client.create_bucket(Bucket=bucket_name)
+                else:
+                    s3_client.create_bucket(
+                        Bucket=bucket_name,
+                        CreateBucketConfiguration={'LocationConstraint': region}
+                    )
+                print(f"Bucket '{bucket_name}' created successfully.")
+            except ClientError as e:
+                print(f"Error occurred while creating bucket: {e}")
+        else:
+            print(f"Error occurred: {e}")
+
 def apply_model(test_data_path:str, model_bucket:str, model_name:str, dest_bucket:str):
     print(f'Reading the prepared data from {os.path.join(test_data_path, "test.pkl")}...')
-    X_test, y_test = load_pickle(os.path.join(test_data_path, "test.pkl"))
+    X_test, y_test = utils.load_pickle(os.path.join(test_data_path, "test.pkl"))
 
     print(f'Loading the model from bucket={model_bucket}...')
-    model, run_id = load_most_recent_model(model_bucket, model_name)
+    model, run_id = load_most_recent_model(model_bucket, model_name, 'best-models')
 
     print('Applying the model...')
     y_pred = model.predict(X_test)
     print(f"y pred shape = {y_pred.shape}")
+
+    print(f"Region = {region}")
+    create_s3_bucket(dest_bucket, region)
 
     output_file = f's3://{dest_bucket}/{run_id}.parquet'
     print(f'Saving the result to {output_file}...')

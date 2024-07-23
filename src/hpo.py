@@ -23,13 +23,10 @@ from hyperopt.pyll import scope
 from sklearn.linear_model import Ridge
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
+import utils
 
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 mlflow.set_experiment("model-hyperopt")
-
-def load_pickle(filename: str):
-    with open(filename, "rb") as f_in:
-        return pickle.load(f_in)
 
 @click.command()
 @click.option(
@@ -44,8 +41,8 @@ def load_pickle(filename: str):
 )
 def run_optimization(data_path: str, num_trials: int):
 
-    X_train, y_train = load_pickle(os.path.join(data_path, "train.pkl"))
-    X_val, y_val = load_pickle(os.path.join(data_path, "val.pkl"))
+    X_train, y_train = utils.load_pickle(os.path.join(data_path, "train.pkl"))
+    X_val, y_val = utils.load_pickle(os.path.join(data_path, "val.pkl"))
 
     def objective(params):
         model_type = params.pop('type')  # Remove 'type' from params
@@ -77,12 +74,12 @@ def run_optimization(data_path: str, num_trials: int):
             'subsample': hp.uniform('subsample', 0.8, 1.0),
             'colsample_bytree': hp.uniform('colsample_bytree', 0.8, 1.0),
             'random_state': RANDOM_STATE
-        },
-        {
-            'type': 'Ridge',
-            'alpha': hp.loguniform('alpha', np.log(0.001), np.log(1)),  # Narrower range for alpha
-            'random_state': RANDOM_STATE
         }
+        # {
+        #     'type': 'Ridge',
+        #     'alpha': hp.loguniform('alpha', np.log(0.001), np.log(1)),  # Narrower range for alpha
+        #     'random_state': RANDOM_STATE
+        # }
     ])
 
     rstate = np.random.default_rng(RANDOM_STATE)  # for reproducible results

@@ -11,6 +11,7 @@ from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
 from dotenv import load_dotenv
 import os
+import utils
 
 load_dotenv()  # This method reads the .env file and loads it into the environment
 
@@ -23,16 +24,10 @@ BEST_MODELS_EXPERIMENT_NAME = "best-models"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 mlflow.set_experiment(BEST_MODELS_EXPERIMENT_NAME)
 
-
-def load_pickle(filename):
-    with open(filename, "rb") as f_in:
-        return pickle.load(f_in)
-
-
 def train_and_log_model(data_path, params):
-    X_train, y_train = load_pickle(os.path.join(data_path, "train.pkl"))
-    X_val, y_val = load_pickle(os.path.join(data_path, "val.pkl"))
-    X_test, y_test = load_pickle(os.path.join(data_path, "test.pkl"))
+    X_train, y_train = utils.load_pickle(os.path.join(data_path, "train.pkl"))
+    X_val, y_val = utils.load_pickle(os.path.join(data_path, "val.pkl"))
+    X_test, y_test = utils.load_pickle(os.path.join(data_path, "test.pkl"))
 
     with mlflow.start_run():
         model_type = params.pop('type')

@@ -17,6 +17,7 @@ import os
 import pickle
 import click
 import mlflow
+import utils
 
 from sklearn.linear_model import LinearRegression, Ridge
 from xgboost import XGBRegressor
@@ -24,10 +25,6 @@ from sklearn.metrics import mean_squared_error
 
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 mlflow.set_experiment("model-train")
-
-def load_pickle(filename: str):
-    with open(filename, "rb") as f_in:
-        return pickle.load(f_in)
 
 @click.command()
 @click.option(
@@ -38,8 +35,8 @@ def load_pickle(filename: str):
 def run_train(data_path: str):
     models = {
         "LinearRegression": LinearRegression(),
-        "XGBRegressor": XGBRegressor(max_depth=5, n_estimators=50, random_state=RANDOM_STATE),
-        "Ridge": Ridge(alpha=0.5, random_state=RANDOM_STATE)  # Adjusted alpha for less complexity
+        "XGBRegressor": XGBRegressor(max_depth=5, n_estimators=50, random_state=RANDOM_STATE)
+        # "Ridge": Ridge(alpha=0.5, random_state=RANDOM_STATE)  # Adjusted alpha for less complexity
     }
 
     for model_name, model in models.items():
@@ -47,8 +44,8 @@ def run_train(data_path: str):
             mlflow.set_tag("Developer", "Michael Mannerow")
             mlflow.set_tag("model", model_name)
             
-            X_train, y_train = load_pickle(os.path.join(data_path, "train.pkl"))
-            X_val, y_val = load_pickle(os.path.join(data_path, "val.pkl"))
+            X_train, y_train = utils.load_pickle(os.path.join(data_path, "train.pkl"))
+            X_val, y_val = utils.load_pickle(os.path.join(data_path, "val.pkl"))
 
             # Log model parameters
             if model_name == "XGBRegressor":

@@ -4,23 +4,22 @@ import click
 import pandas as pd
 from kaggle.api.kaggle_api_extended import KaggleApi
 import zipfile
+import utils
 
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
-
-
-def dump_pickle(obj, filename: str):
-    with open(filename, "wb") as f_out:
-        return pickle.dump(obj, f_out)
-
 
 def read_dataframe(raw_data_path: str):
     csv_file_path = os.path.join(raw_data_path, 'historical_data.csv')
 
     # Load the CSV file into a pandas DataFrame
     df = pd.read_csv(csv_file_path)
-    return df
+
+    #Remove this later. Just take half the dataset.
+    # Return a random sample of half the dataset
+    half_df = df.sample(frac=0.50, random_state=1)  # random_state ensures reproducibility
+    return half_df
 
 def create_delivery_duration(df: pd.DataFrame) -> pd.DataFrame:
     """ Create delivery duration feature in minutes """
@@ -143,10 +142,10 @@ def run_data_prep(raw_data_path: str, dest_path: str):
 
     print(f"Dumping Pickles to {dest_path}")
     # # Save DictVectorizer and datasets
-    dump_pickle(dv, os.path.join(dest_path, "dv.pkl"))
-    dump_pickle((X_train, y_train), os.path.join(dest_path, "train.pkl"))
-    dump_pickle((X_val, y_val), os.path.join(dest_path, "val.pkl"))
-    dump_pickle((X_test, y_test), os.path.join(dest_path, "test.pkl"))
+    utils.dump_pickle(dv, os.path.join(dest_path, "dv.pkl"))
+    utils.dump_pickle((X_train, y_train), os.path.join(dest_path, "train.pkl"))
+    utils.dump_pickle((X_val, y_val), os.path.join(dest_path, "val.pkl"))
+    utils.dump_pickle((X_test, y_test), os.path.join(dest_path, "test.pkl"))
 
 if __name__ == '__main__':
     run_data_prep()
