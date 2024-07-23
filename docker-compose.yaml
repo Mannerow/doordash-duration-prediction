@@ -22,7 +22,7 @@ services:
       /bin/bash -c "
       sleep 10 &&
       prefect cloud login --key $PREFECT_API_KEY --workspace $PREFECT_WORKSPACE &&
-      python src/run_flow.py
+      python run_flow.py
       "
     environment:
       - PREFECT_API_KEY=${PREFECT_API_KEY}

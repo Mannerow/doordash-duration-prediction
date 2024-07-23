@@ -1,9 +1,6 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Set the working directory in the container
-WORKDIR /app
-
 # Copy the Pipfile and Pipfile.lock to the working directory
 COPY Pipfile Pipfile.lock /app/
 
@@ -21,6 +18,9 @@ RUN mkdir -p /root/.kaggle && cp /app/kaggle.json /root/.kaggle/kaggle.json
 
 # Ensure the kaggle.json file has the correct permissions
 RUN chmod 600 /root/.kaggle/kaggle.json
+
+# Set the working directory to /app/src
+WORKDIR /app/src
 
 # Expose the necessary ports
 EXPOSE 5000 8080
