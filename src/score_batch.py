@@ -18,13 +18,10 @@ import os
 
 load_dotenv()  # This will load all the env variables from the .env file
 
-# Fetch the tracking URI from environment variables
-mlflow_tracking_uri = os.getenv('MLFLOW_TRACKING_URI')
-
 region = os.getenv('AWS_DEFAULT_REGION')
 
 # Set the MLflow tracking URI
-mlflow.set_tracking_uri(mlflow_tracking_uri)
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000"))
 
 def generate_uuids(n):
     trip_ids = []

@@ -165,3 +165,4 @@ data/
 backend.db
 src/mlruns
 artifacts/
+.prefectignore

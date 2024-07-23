@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mlflow:
+    build: .
+    command: >
+      /bin/bash -c "
+      mlflow server --host 0.0.0.0 --backend-store-uri $MLFLOW_BACKEND_STORE_URI --default-artifact-root $MLFLOW_DEFAULT_ARTIFACT_ROOT
+      "
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=${MLFLOW_BACKEND_STORE_URI}
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=${MLFLOW_DEFAULT_ARTIFACT_ROOT}
+      - MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+
+  app:
+    build: .
+    command: >
+      /bin/bash -c "
+      sleep 10 &&
+      prefect cloud login --key $PREFECT_API_KEY --workspace $PREFECT_WORKSPACE &&
+      python src/run_flow.py
+      "
+    environment:
+      - PREFECT_API_KEY=${PREFECT_API_KEY}
+      - PREFECT_WORKSPACE=${PREFECT_WORKSPACE}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
