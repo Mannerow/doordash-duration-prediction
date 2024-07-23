@@ -1,5 +1,7 @@
 from prefect import task, flow
 import subprocess
+from prefect import serve
+from datetime import timedelta
 
 @task
 def run_data_preprocess():
@@ -41,7 +43,7 @@ def run_score_batch():
     print(result.stdout)
     return result.stdout  # Return value to be used as input in dependent tasks if needed
 
-@flow
+@flow(log_prints=True)
 def ml_workflow():
     data_preprocess_result = run_data_preprocess()
     train_result = run_train(wait_for=[data_preprocess_result])
@@ -49,6 +51,10 @@ def ml_workflow():
     register_model_result = run_register_model(wait_for=[hpo_result])  # Dependency managed by wait_for
     score_batch_result = run_score_batch(wait_for=[register_model_result])  # Dependency managed by wait_for
 
-# Run the flow
+# Serve the flow with a schedule
 if __name__ == "__main__":
-    ml_workflow()
+    ml_workflow.serve(
+        name="ml-workflow-deployment",
+        parameters={},
+        interval=timedelta(hours=1).total_seconds()  # Set the interval in seconds
+    )
