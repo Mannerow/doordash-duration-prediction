@@ -49,38 +49,6 @@ def load_most_recent_model(model_bucket, model_name, experiment_name):
     model = mlflow.pyfunc.load_model(logged_model)
     return model, run_id
 
-def save_results(df, y_pred, y_test, run_id, output_file):
-    trip_ids = generate_uuids(df.shape[0])
-    results_df = pd.DataFrame({
-        'trip_id': trip_ids,
-        'actual_duration': y_test,
-        'predicted_duration': y_pred,
-        'diff': y_test - y_pred,
-        'model_version': run_id
-    })
-    
-    dv = utils.load_pickle("../data/processed_data/dv.pkl")
-
-    # Ensure df is a DataFrame, not a csr_matrix
-    if isinstance(df, csr_matrix):
-        # Convert sparse matrix to dense matrix
-        X_dense = df.toarray()
-        
-        # Retrieve feature names from DictVectorizer
-        feature_names = dv.get_feature_names_out()
-        
-        # Create DataFrame from dense matrix
-        df_dense = pd.DataFrame(X_dense, columns=feature_names)
-    else:
-        df_dense = df
-    
-    final_df = pd.concat([df_dense.reset_index(drop=True), results_df.reset_index(drop=True)], axis=1)
-
-    # Print the first few rows of the final DataFrame for debugging
-    print("First few rows of the final DataFrame for debugging:")
-    print(final_df.head())
-
-    final_df.to_parquet(output_file, index=False)
 
 def apply_model(test_data_path:str, model_bucket:str, model_name:str, dest_bucket:str):
     print(f'Reading the prepared data from {os.path.join(test_data_path, "test.pkl")}...')
