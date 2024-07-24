@@ -16,6 +16,10 @@ boto3 = "*"
 evidently = "*"
 requests = "*"
 psycopg = "*"
+tqdm = "*"
+pyarrow = "*"
+psycopg-binary = "*"
+numpy = "*"
 
 [dev-packages]
 pylint = "*"

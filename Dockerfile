@@ -1,6 +1,9 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
+# Set the working directory to /app
+WORKDIR /app
+
 # Copy the Pipfile and Pipfile.lock to the working directory
 COPY Pipfile Pipfile.lock /app/
 
@@ -18,6 +21,12 @@ RUN mkdir -p /root/.kaggle && cp /app/kaggle.json /root/.kaggle/kaggle.json
 
 # Ensure the kaggle.json file has the correct permissions
 RUN chmod 600 /root/.kaggle/kaggle.json
+
+# Copy the config directory
+COPY config /app/config
+
+# Copy the dashboards directory
+COPY dashboards /app/dashboards
 
 # Set the working directory to /app/src
 WORKDIR /app/src

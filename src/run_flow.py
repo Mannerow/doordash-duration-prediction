@@ -43,6 +43,14 @@ def run_score_batch():
     print(result.stdout)
     return result.stdout  # Return value to be used as input in dependent tasks if needed
 
+@task
+def run_monitor_metrics():
+    result = subprocess.run(['python', 'monitor_metrics.py'], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"monitor_metrics.py failed: {result.stderr}")
+    print(result.stdout)
+    return result.stdout  # Return value to be used as input in dependent tasks if needed
+
 @flow(log_prints=True)
 def ml_workflow():
     data_preprocess_result = run_data_preprocess()
@@ -50,6 +58,8 @@ def ml_workflow():
     hpo_result = run_hpo(wait_for=[train_result])  # Dependency managed by wait_for
     register_model_result = run_register_model(wait_for=[hpo_result])  # Dependency managed by wait_for
     score_batch_result = run_score_batch(wait_for=[register_model_result])  # Dependency managed by wait_for
+    monitor_metrics_result = run_monitor_metrics(wait_for=[score_batch_result])  # Dependency managed by wait_for
+
 
 # Serve the flow with a schedule
 if __name__ == "__main__":
