@@ -29,7 +29,7 @@ def generate_uuids(n):
         trip_ids.append(str(uuid.uuid4()))
     return trip_ids
 
-def load_most_recent_model(model_bucket, model_name, experiment_name):
+def load_best_model(model_bucket, model_name, experiment_name):
     client = MlflowClient()
 
     # Get experiment ID from the experiment name
@@ -119,7 +119,7 @@ def apply_model(test_data_path:str, model_bucket:str, model_name:str, dest_bucke
     X_test, y_test = utils.load_pickle(os.path.join(test_data_path, "test.pkl"))
 
     print(f'Loading the model from bucket={model_bucket}...')
-    model, run_id = load_most_recent_model(model_bucket, model_name, 'best-models')
+    model, run_id = load_best_model(model_bucket, model_name, 'best-models')
 
     print('Applying the model...')
     y_pred = model.predict(X_test)
