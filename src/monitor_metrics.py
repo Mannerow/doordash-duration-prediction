@@ -129,10 +129,10 @@ def setup_monitoring(test_data_path: str, best_model_bucket: str, best_model_nam
     ])
     logging.info("Monitoring setup completed.")
 
-    print(f"Current Data = {current_data.head()}")
-    print(f"Reference Data = {reference_data.head()}")
-    print(f"Numerical features: {num_features}")
-    print(f"Categorical features: {cat_features}")
+    logging.info(f"Current Data = {current_data.head()}")
+    logging.info(f"Reference Data = {reference_data.head()}")
+    logging.info(f"Numerical features: {num_features}")
+    logging.info(f"Categorical features: {cat_features}")
     return current_data, reference_data, report, column_mapping
 
 def prep_db():
