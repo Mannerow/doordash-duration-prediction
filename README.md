@@ -60,26 +60,38 @@ The app service provides a link to Prefect Cloud. Open this link to access the P
 
 This section provides an overview of the primary scripts and their functionalities within the project, illustrating the workflow from data preprocessing to model deployment and monitoring:
 
-data_preprocess.py
-This script handles the preprocessing of raw data sourced from Kaggle. Key tasks include data cleaning, feature engineering, and splitting the dataset into training and testing subsets.
+**`experimentation.ipynb`**
 
-train.py
-Responsible for training the machine learning model, this script encompasses model selection, training, and evaluation to ensure robust performance on unseen data.
+This Jupyter notebook is used for exploratory data analysis (EDA) and initial experimentation with the DoorDash delivery duration prediction dataset. It imports necessary packages and downloads the dataset from Kaggle. The notebook includes steps for data exploration, such as loading the dataset into a Pandas DataFrame, checking for missing values, and creating new features like delivery duration. It also performs data visualization to identify outliers and understand data distributions. The notebook demonstrates the process of data cleaning by removing outliers and preparing features for modeling. It concludes with building a simple linear regression model using a pipeline, splitting the data into training and test sets, and evaluating model performance using metrics like RMSE and MAE. This notebook serves as an interactive environment to explore and experiment with different approaches before formalizing them into the main project pipeline.
 
-hpo.py
-This script performs hyperparameter optimization, fine-tuning the model’s performance by employing techniques like grid search or random search to determine the optimal set of hyperparameters.
+**`run_flow.py`**
 
-register_model.py
-Post-training, this script registers the final model with the MLflow tracking server, enabling versioning and easy retrieval for future predictions.
+This script initiates and executes the Prefect flow, orchestrating the entire machine learning pipeline from data preprocessing to model registration. It ensures each step is executed sequentially and correctly, running the pipeline on an hourly schedule.
 
-run_flow.py
-This script initiates and executes the Prefect flow, orchestrating the entire machine learning pipeline from data preprocessing to model registration, ensuring each step is executed sequentially and correctly.
+**`data_preprocess.py`**
 
-monitor_metrics.py
-Designed for performance monitoring, this script tracks various metrics over time, helping identify any drifts or degradations in the model's performance.
+This script prepares raw data for machine learning using `pandas`, `scikit-learn`, and the `Kaggle API`. It reads the raw data, creates a delivery duration feature, handles missing values, and removes outliers. The script then extracts relevant features, vectorizes them, and splits the data into training, validation, and test sets. This ensures the data is clean and well-structured for model training and evaluation.
 
-score_batch.py
-Used for batch scoring, this script allows the model to make predictions on new data batches. It can be scheduled to run at regular intervals, ensuring predictions remain current.
+**`train.py`**
 
-utils.py
-This script contains utility functions that are utilized across different project scripts, promoting modularity and reusability within the codebase.
+This script trains and evaluates baseline models without hyperparameter tuning. It leverages `MLflow` to log model performance and metrics for models such as `LinearRegression`, `XGBRegressor`, and `Ridge`. The script reads processed data, trains each model, evaluates it using RMSE, and logs the results to `MLflow`. This ensures reproducibility and easy tracking of model performance.
+
+**`hpo.py`**
+
+This script performs hyperparameter optimization (HPO) for selected models using `Hyperopt` and logs the hyperparameters and performance metrics for each trial using `MLflow`. Hyperparameter tuning involves systematically searching for the best set of parameters that improves the model's performance. The script optimizes models such as `Ridge` and `XGBRegressor`, enhancing their performance by exploring various hyperparameter configurations. It reads processed data, runs the optimization, and records the results to ensure efficient model tuning.
+
+**`register_model.py`**
+
+This script identifies and registers the best-performing models using `MLflow`. It evaluates models from hyperparameter optimization and training experiments based on validation and test RMSE. The script reads processed data, trains and evaluates models, and registers the best model to ensure reproducibility and ease of deployment. The best model is stored in the default artifact location specified in the .env file.
+
+**`score_batch.py`**
+
+This script applies the best-performing machine learning model to the test dataset and saves the prediction results to an S3 bucket. It reads the processed test data, loads the best model from the specified S3 bucket using `MLflow`, and generates predictions. Hyperparameter tuning systematically searches for the best set of parameters to improve model performance. The script handles the creation of the destination S3 bucket if it does not already exist. The results, including predicted and actual durations along with the model version, are saved as a Parquet file in the specified S3 bucket. The environment variables, such as MLFLOW_TRACKING_URI and AWS_DEFAULT_REGION, are loaded from the .env file.
+
+**`monitor_metrics.py`**
+
+TODO
+
+**`utils.py`**
+
+This script contains utility functions that are utilized across different project scripts, promoting modularity and reusability within the codebase. Specifically, it includes helper functions for loading and dumping pickle files.
