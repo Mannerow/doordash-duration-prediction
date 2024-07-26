@@ -149,26 +149,58 @@ def prep_db():
         logging.error(f"Failed to prepare database: {e}")
         raise
 
+# Function to generate daily timestamps between two dates
+def generate_daily_timestamps(start_date, end_date):
+    return pd.date_range(start=start_date, end=end_date, freq='D')
+
+# Function to filter data by day
+def filter_data_by_day(data, day):
+    start_time = day.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_time = start_time + pd.Timedelta(days=1)
+    return data[(data['created_at'] >= start_time) & (data['created_at'] < end_time)]
+
 def calculate_metrics_postgresql(current_data, reference_data, report, column_mapping):
     logging.info("Calculating metrics and storing in PostgreSQL...")
-    # Run the Evidently report
-    report.run(reference_data=reference_data, current_data=current_data, column_mapping=column_mapping)
-    # Extract metrics from the report
-    result = report.as_dict()
-    # logging.info(f"Report results: {result}")
+    
+    # Ensure date columns exist in the data and convert to datetime
+    current_data['created_at'] = pd.to_datetime(current_data['created_at'])
+    reference_data['created_at'] = pd.to_datetime(reference_data['created_at'])
+    
+    # Hard-coded start and end dates
+    start_date = pd.to_datetime("2014-10-19")
+    end_date = pd.to_datetime("2015-02-19")
+    
+    logging.info(f"Min date: {start_date}, Max date: {end_date}")
+    
+    # Generate daily timestamps
+    daily_timestamps = generate_daily_timestamps(start_date, end_date)
+    
+    # Iterate over each day to calculate and store metrics
+    for day in daily_timestamps:
+        single_current_data = filter_data_by_day(current_data, day)
+        single_reference_data = filter_data_by_day(reference_data, day)
+        
+        if single_current_data.empty or single_reference_data.empty:
+            logging.warning(f"No data available for the day {day}. Skipping this day.")
+            continue
+        
+        # Run the Evidently report
+        report.run(reference_data=single_reference_data, current_data=single_current_data, column_mapping=column_mapping)
+        # Extract metrics from the report
+        result = report.as_dict()
+        
+        prediction_drift = result['metrics'][0]['result']['drift_score']
+        num_drifted_columns = result['metrics'][1]['result']['number_of_drifted_columns']
+        share_missing_values = result['metrics'][2]['result']['current']['share_of_missing_values']
+        rmse = result['metrics'][3]['result']['current']['rmse']
 
-    prediction_drift = result['metrics'][0]['result']['drift_score']
-    num_drifted_columns = result['metrics'][1]['result']['number_of_drifted_columns']
-    share_missing_values = result['metrics'][2]['result']['current']['share_of_missing_values']
-    rmse = result['metrics'][3]['result']['current']['rmse']
-    # Store metrics in PostgreSQL
-    timestamp = datetime.datetime.now()
-    with psycopg.connect("host=db port=5432 dbname=test user=postgres password=example", autocommit=True) as conn:
-        with conn.cursor() as curr:
-            curr.execute(
-                "insert into dummy_metrics(timestamp, prediction_drift, num_drifted_columns, share_missing_values, rmse) values (%s, %s, %s, %s, %s)",
-                (timestamp, prediction_drift, num_drifted_columns, share_missing_values, rmse)
-            )
+        # Store metrics in PostgreSQL
+        with psycopg.connect("host=db port=5432 dbname=test user=postgres password=example", autocommit=True) as conn:
+            with conn.cursor() as curr:
+                curr.execute(
+                    "insert into dummy_metrics(timestamp, prediction_drift, num_drifted_columns, share_missing_values, rmse) values (%s, %s, %s, %s, %s)",
+                    (day, prediction_drift, num_drifted_columns, share_missing_values, rmse)
+                )
     logging.info("Metrics successfully inserted into PostgreSQL.")
 
 @click.command()
