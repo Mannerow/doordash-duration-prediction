@@ -90,8 +90,8 @@ This script applies the best-performing machine learning model to the test datas
 
 **`monitor_metrics.py`**
 
-TODO
+This script utilizes multiple libraries such as `pandas`, `boto3`, `joblib`, `psycopg`, `scipy`, `mlflow`, and `evidently` to monitor and store metrics in PostgreSQL. It begins by initializing MLflow for model tracking and loading the best model from an S3 bucket. The script then sets up the monitoring process by loading and predicting on test data, decoding dataframes, and defining column mappings for numerical and categorical features. It uses the Evidently library to generate a report that includes metrics like column drift, dataset drift, missing values, and regression quality. These metrics are then calculated and stored in a PostgreSQL database on a daily basis, filtered by the 'created_at' timestamp, with each day's data processed individually. The reports can be viewed and visualizations can be created by logging into the Grafana interface.
 
 **`utils.py`**
 
-This script contains utility functions that are utilized across different project scripts, promoting modularity and reusability within the codebase. Specifically, it includes helper functions for loading and dumping pickle files.
+This script contains utility functions that are utilized across different project scripts, promoting modularity and reusability within the codebase. Specifically, it includes helper functions for loading and dumping pickle files, and a function to decode a one-hot encoded DataFrame back to its original format using the DictVectorizer.
