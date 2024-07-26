@@ -65,22 +65,7 @@ def save_results(df, y_pred, y_test, run_id, output_file):
         'model_version': run_id
     })
     
-    dv = utils.load_pickle("../data/processed_data/dv.pkl")
-
-    # Ensure df is a DataFrame, not a csr_matrix
-    if isinstance(df, csr_matrix):
-        # Convert sparse matrix to dense matrix
-        X_dense = df.toarray()
-        
-        # Retrieve feature names from DictVectorizer
-        feature_names = dv.get_feature_names_out()
-        
-        # Create DataFrame from dense matrix
-        df_dense = pd.DataFrame(X_dense, columns=feature_names)
-    else:
-        df_dense = df
-    
-    final_df = pd.concat([df_dense.reset_index(drop=True), results_df.reset_index(drop=True)], axis=1)
+    final_df = pd.concat([df.reset_index(drop=True), results_df.reset_index(drop=True)], axis=1)
 
     # Print the first few rows of the final DataFrame for debugging
     print("First few rows of the final DataFrame for debugging:")
@@ -127,6 +112,11 @@ def apply_model(test_data_path:str, model_bucket:str, model_name:str, dest_bucke
 
     print(f"Region = {region}")
     create_s3_bucket(dest_bucket, region)
+
+    dv = utils.load_pickle("../data/processed_data/dv.pkl")
+
+    print("Decoding Dataframes...")
+    X_test = utils.decode_dataframe(dv, X_test)
 
     output_file = f's3://{dest_bucket}/{run_id}.parquet'
     print(f'Saving the result to {output_file}...')

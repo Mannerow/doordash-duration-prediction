@@ -73,21 +73,6 @@ def load_best_model(best_model_bucket, best_model_name, experiment_name):
     logging.info("Best model loaded.")
     return model, run_id
 
-def convert_sparse_to_dense(dv, df):
-    logging.info("Converting sparse matrix to dense matrix...")
-    # Ensure df is a DataFrame, not a csr_matrix
-    if isinstance(df, csr_matrix):
-        # Convert sparse matrix to dense matrix
-        X_dense = df.toarray()
-        # Retrieve feature names from DictVectorizer
-        feature_names = dv.get_feature_names_out()
-        # Create DataFrame from dense matrix
-        df_dense = pd.DataFrame(X_dense, columns=feature_names)
-    else:
-        df_dense = df
-    logging.info("Conversion completed.")
-    return df_dense
-
 def setup_monitoring(test_data_path: str, best_model_bucket: str, best_model_name: str, experiment_name: str):
     logging.info("Setting up monitoring...")
     init_mlflow()
@@ -105,14 +90,30 @@ def setup_monitoring(test_data_path: str, best_model_bucket: str, best_model_nam
 
     logging.info(f"y_pred shape = {y_pred.shape}")
     dv = utils.load_pickle("../data/processed_data/dv.pkl")
-    current_data = convert_sparse_to_dense(dv, X_test)
-    reference_data = convert_sparse_to_dense(dv, X_val)
+
+    logging.info("Decoding Dataframes...")
+    current_data = utils.decode_dataframe(dv, X_test)
+    reference_data = utils.decode_dataframe(dv, X_val)
+
     # Get num and cat features
     num_features = current_data.select_dtypes(include=['number']).columns.tolist()
     cat_features = current_data.select_dtypes(include=['object', 'category']).columns.tolist()
+
+    # Set up target column
+    current_data[target] = y_test
+    reference_data[target] = y_val
+
     # Set up prediction column
     current_data['prediction'] = y_pred
     reference_data['prediction'] = y_val_pred
+
+    
+
+
+
+    print(f"Current Shape = {current_data.shape}")
+    print(f"Ref Shape = {reference_data.shape}")
+
     # Column mapping
     column_mapping = ColumnMapping(
         target=target,
@@ -131,8 +132,6 @@ def setup_monitoring(test_data_path: str, best_model_bucket: str, best_model_nam
 
     logging.info(f"Current Data = {current_data.head()}")
     logging.info(f"Reference Data = {reference_data.head()}")
-    logging.info(f"Numerical features: {num_features}")
-    logging.info(f"Categorical features: {cat_features}")
     return current_data, reference_data, report, column_mapping
 
 def prep_db():
@@ -156,7 +155,7 @@ def calculate_metrics_postgresql(current_data, reference_data, report, column_ma
     report.run(reference_data=reference_data, current_data=current_data, column_mapping=column_mapping)
     # Extract metrics from the report
     result = report.as_dict()
-    logging.info(f"Report results: {result}")
+    # logging.info(f"Report results: {result}")
 
     prediction_drift = result['metrics'][0]['result']['drift_score']
     num_drifted_columns = result['metrics'][1]['result']['number_of_drifted_columns']
