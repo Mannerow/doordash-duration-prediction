@@ -166,3 +166,13 @@ backend.db
 src/mlruns
 artifacts/
 .prefectignore
+
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
