@@ -3,9 +3,14 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "state_bucket" {
-  description = "The name of the S3 bucket for Terraform state storage"
-  default     = "tf-state-mlops-zoomcamp-mm"
+variable "mlflow_models_bucket" {
+  description = "The name of the S3 bucket which stores the best model"
+  default     = "mlflow-models-mannerow"
+}
+
+variable "prediction_bucket" {
+  description = "The name of the S3 bucket for the scored parquet files"
+  default     = "doordash-duration-prediction-mannerow"
 }
 
 variable "project_id" {
@@ -13,14 +18,12 @@ variable "project_id" {
   default = "mlops-zoomcamp"
 }
 
-variable "model_bucket" {
-  description = "mlflow-models-mannerow"
-}
-
 variable "docker_image_local_path" {
   description = ""
+  default     = "../"
 }
 
 variable "ecr_repo_name" {
-  description = ""
+  description = "The name of the ECR repository, if needed"
+  default     = "example-repo"  # Update this if you plan to use ECR
 }

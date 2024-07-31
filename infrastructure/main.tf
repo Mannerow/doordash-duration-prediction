@@ -2,9 +2,9 @@
 terraform {
   required_version = ">= 1.0"
   backend "s3" {
-    bucket  = var.state_bucket
+    bucket  = "terraform-state-bucket-mm"
     key     = "mlops-zoomcamp-stg.tfstate"
-    region  = var.aws_region
+    region  = "us-east-1"
     encrypt = true
   }
 }
@@ -19,4 +19,14 @@ data "aws_caller_identity" "current_identity" {}
 
 locals {
   account_id = data.aws_caller_identity.current_identity.account_id
+}
+
+module "mlflow_models_bucket" {
+  source      = "./modules/s3"
+  bucket_name = var.mlflow_models_bucket
+}
+
+module "predictions_data_bucket" {
+  source      = "./modules/s3"
+  bucket_name = var.prediction_bucket
 }
