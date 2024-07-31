@@ -1,4 +1,4 @@
-# Make sure to create state bucket beforehand
+# Make sure to manually create state bucket beforehand
 terraform {
   required_version = ">= 1.0"
   backend "s3" {
@@ -29,4 +29,9 @@ module "mlflow_models_bucket" {
 module "predictions_data_bucket" {
   source      = "./modules/s3"
   bucket_name = var.prediction_bucket
+}
+
+module "ecr_repository" {
+  source = "./modules/ecr"
+  repository_name = var.ecr_repository_name
 }

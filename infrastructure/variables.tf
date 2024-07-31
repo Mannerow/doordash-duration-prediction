@@ -23,7 +23,7 @@ variable "docker_image_local_path" {
   default     = "../"
 }
 
-variable "ecr_repo_name" {
-  description = "The name of the ECR repository, if needed"
-  default     = "example-repo"  # Update this if you plan to use ECR
+variable "ecr_repository_name" {
+  description = "The name of the ECR repository"
+  type        = string
 }
