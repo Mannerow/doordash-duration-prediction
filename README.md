@@ -115,3 +115,7 @@ This script utilizes multiple libraries such as `pandas`, `boto3`, `joblib`, `ps
 **`utils.py`**
 
 This script contains utility functions that are utilized across different project scripts, promoting modularity and reusability within the codebase. Specifically, it includes helper functions for loading and dumping pickle files, and a function to decode a one-hot encoded DataFrame back to its original format using the DictVectorizer.
+
+## 🔄 Reproducability
+
+To ensure reproducibility, this project’s environment is managed with `pipenv`. While `pipenv` is the primary tool for handling dependencies, a `requirements.txt` file is also included for reference purposes. This helps users understand the specific packages and versions used in the project.
