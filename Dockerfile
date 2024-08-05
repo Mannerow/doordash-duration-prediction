@@ -13,6 +13,30 @@ RUN pip install pipenv
 # Install the dependencies using pipenv
 RUN pipenv install --deploy --system
 
+# Set Terraform version
+ARG TERRAFORM_VERSION=1.9.3
+
+# Install Terraform, AWS CLI, and Docker CLI
+RUN apt-get update && \
+    apt-get install -y wget unzip curl gnupg2 lsb-release && \
+    wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    mv terraform /usr/local/bin/ && \
+    rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf awscliv2.zip aws && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
+    echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli && \
+    apt-get clean
+
+# Copy the start script into the container at /app and make it executable
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
@@ -34,5 +58,4 @@ WORKDIR /app/src
 # Expose the necessary ports
 EXPOSE 5000 8080
 
-# Define the command to be run when the container starts
 CMD ["/bin/bash"]

@@ -1,0 +1,29 @@
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the Pipfile and Pipfile.lock to the working directory
+COPY Pipfile Pipfile.lock /app/
+
+# Install pipenv
+RUN pip install pipenv
+
+# Install the dependencies using pipenv
+RUN pipenv install --deploy --system
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Copy the .env file into the container
+COPY .env /app/.env
+
+# Set the working directory to /app/src
+WORKDIR /app/src
+
+# Expose the necessary ports
+EXPOSE 5000
+
+# Define the entrypoint to source the .env file and run mlflow
+ENTRYPOINT ["/bin/bash", "-c", "source /app/.env && mlflow server --host 0.0.0.0 --backend-store-uri $MLFLOW_BACKEND_STORE_URI --default-artifact-root $MLFLOW_DEFAULT_ARTIFACT_ROOT"]

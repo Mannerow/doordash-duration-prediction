@@ -2,11 +2,9 @@ version: '3.8'
 
 services:
   mlflow:
-    build: .
-    command: >
-      /bin/bash -c "
-      mlflow server --host 0.0.0.0 --backend-store-uri $MLFLOW_BACKEND_STORE_URI --default-artifact-root $MLFLOW_DEFAULT_ARTIFACT_ROOT
-      "
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
     environment:
       - MLFLOW_BACKEND_STORE_URI=${MLFLOW_BACKEND_STORE_URI}
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=${MLFLOW_DEFAULT_ARTIFACT_ROOT}
@@ -19,17 +17,27 @@ services:
       - back-tier
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: >
       /bin/bash -c "
+      echo 'Running start.sh' &&
+      /app/start.sh &&
       sleep 10 &&
+      echo 'Logging in to Prefect Cloud' &&
       prefect cloud login --key $PREFECT_API_KEY --workspace $PREFECT_WORKSPACE &&
+      echo 'Running Python flow script' &&
       python run_flow.py
       "
     environment:
       - PREFECT_API_KEY=${PREFECT_API_KEY}
       - PREFECT_WORKSPACE=${PREFECT_WORKSPACE}
       - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+      - TF_VAR_ecr_repository_name=${TF_VAR_ecr_repository_name}
+      - TF_VAR_aws_region=${TF_VAR_aws_region}
     depends_on:
       - mlflow
       - db
@@ -37,6 +45,7 @@ services:
       - "8080:8080"
     volumes:
       - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - back-tier
 
