@@ -2,7 +2,7 @@
 
 ## 📄 Problem Description
 
-The objective of this project is to predict the delivery duration for DoorDash orders using historical data. This involves developing a machine learning model that can accurately forecast the time it will take for a delivery to reach the customer from the moment an order is placed. The project will leverage MLOps principles to ensure robust experimentation, model tracking, monitoring, and automation throughout the development and deployment lifecycle.
+The objective of this project is to predict the delivery duration for DoorDash orders using historical data. This involves developing a machine learning model that can accurately forecast the time it will take for a delivery to reach the customer from the moment an order is placed. The project will leverage MLOps principles to ensure robust experimentation, model tracking, monitoring, infrastructure provisioning, and automation throughout the development and deployment lifecycle.
 
 ## 📊 Dataset
 
@@ -10,51 +10,67 @@ The dataset used for this project is sourced from Kaggle and contains various fe
 
 ## 🔒 Authentication
 
-This project requires Kaggle, AWS, and Prefect accounts. Kaggle is used to download the dataset, AWS is used to store the model and predictions, and Prefect is used for pipeline orchestration.
-
-1. Place your kaggle.json in the root directory of this project.
-2. Create a .env file which will contain the necessary environment variables for AWS and Prefect authentication and the MLFlow Endpoint.
-
-```bash
-MLFLOW_TRACKING_URI=http://mlflow:5000
-MLFLOW_DEFAULT_ARTIFACT_ROOT='PATH-GOES-HERE'
-MLFLOW_BACKEND_STORE_URI='sqlite:///backend.db'
-AWS_ACCESS_KEY_ID='YOUR-ACCESS-KEY'
-AWS_SECRET_ACCESS_KEY='YOUR-SECRET-ACCESS-KEY'
-AWS_DEFAULT_REGION=us-east-1
-PREFECT_API_KEY='YOUR-PREFECT-API-KEY'
-PREFECT_WORKSPACE='YOUR-PREFECT-WORKSPACE-NAME'
-```
+This project requires Kaggle, AWS, and Prefect accounts. Kaggle is used to download the dataset, AWS is used to store the model and predictions in S3 and the Docker images with ECR, and Prefect is used for pipeline orchestration.
 
 ## ⚙️ Installation
 
 To get started with the project, follow these steps:
 
-**1. Clone the repository:**
+**1. Install Terraform:**
+
+Visit this [link](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) and follow the instructions to install Terraform on your system.
+
+**2. Clone the repository:**
 
 ```bash
 git clone https://github.com/Mannerow/doordash-duration-prediction
 cd doordash-duration-prediction
 ```
 
-**2. Install the required dependencies:**
+**3. Set up Authentication:**
+
+1. Place your kaggle.json in the root directory of this project.
+2. Create a .env file which will contain the necessary environment variables for AWS and Prefect authentication, S3 bucket and ECR names, and the MLFLow Endpoint. 
 
 ```bash
-pip install pipenv
-pipenv install
+MLFLOW_TRACKING_URI=http://mlflow:5000
+MLFLOW_DEFAULT_ARTIFACT_ROOT='S3-BUCKET-PATH'
+MLFLOW_BACKEND_STORE_URI='sqlite:///backend.db'
+AWS_ACCESS_KEY_ID='YOUR-ACCESS-KEY'
+AWS_SECRET_ACCESS_KEY='YOUR-SECRET-ACCESS-KEY'
+AWS_DEFAULT_REGION=us-east-1
+AWS_ACCOUNT_ID='YOUR-ACCOUNT-ID'
+PREFECT_API_KEY='YOUR-PREFECT-API-KEY'
+PREFECT_WORKSPACE='YOUR-PREFECT-WORKSPACE-NAME'
+TF_VAR_aws_region=us-east-1
+TF_VAR_mlflow_models_bucket='MODEL-BUCKET-NAME'
+TF_VAR_prediction_bucket='PREDICTION-BUCKET-NAME'
+TF_VAR_ecr_repository_name='ECR-REPO-NAME'
 ```
+
+**4. Manually create an S3 bucket for the Terraform state:**
+
+Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect the new bucket. 
 
 ## 🚀 Running the Project
 
-To run the project, simply build and run the docker image: 
+To run the project, simply run the start script which will perform the necessary setup using `Terraform`, and then build and run a docker image. 
 
 ```bash
-docker compose up
+./start.sh
 ```
 
 ## 🌐 Viewing Prefect Cloud
 
 The app service provides a link to Prefect Cloud. Open this link to access the Prefect Cloud UI, which offers detailed insights into deployments and previous runs. While the deployment is scheduled to run hourly, you can manually initiate a run by clicking 'Run' for immediate execution.
+
+## 🛠️ Infrastructure Provisioning with Terraform
+
+This project leverages Terraform to automate the setup of AWS S3 buckets for storing model artifacts and predictions, as well as an Amazon ECR repository for the Docker image. Utilizing Terraform ensures that the infrastructure is provisioned consistently and reproducibly, reducing the risk of manual errors. This automation is crucial for maintaining a reliable workflow, especially in a production environment. It is important to note that the user should manually create an S3 bucket for storing the Terraform state, which helps in tracking infrastructure changes over time and enables collaborative infrastructure management.
+
+## 📈 Monitoring with Evidently and Grafana
+
+For effective monitoring of the model's performance and data quality, this project utilizes Evidently and Grafana. Users can access the monitoring dashboard by navigating to http://localhost:3000/login and logging in with the username 'admin' and password 'admin'. Once logged in, navigate to the dashboards section to view a comprehensive dashboard that displays key metrics such as test RMSE, prediction drift, the number of drifted columns, and the number of missing values. This setup ensures continuous insight into the model's performance and data integrity, facilitating prompt detection and resolution of any issues.
 
 ## 🔍 How It Works
 
@@ -63,6 +79,10 @@ This section provides an overview of the primary scripts and their functionaliti
 **`experimentation.ipynb`**
 
 This Jupyter notebook is used for exploratory data analysis (EDA) and initial experimentation with the DoorDash delivery duration prediction dataset. It imports necessary packages and downloads the dataset from Kaggle. The notebook includes steps for data exploration, such as loading the dataset into a Pandas DataFrame, checking for missing values, and creating new features like delivery duration. It also performs data visualization to identify outliers and understand data distributions. The notebook demonstrates the process of data cleaning by removing outliers and preparing features for modeling. It concludes with building a simple linear regression model using a pipeline, splitting the data into training and test sets, and evaluating model performance using metrics like RMSE and MAE. This notebook serves as an interactive environment to explore and experiment with different approaches before formalizing them into the main project pipeline.
+
+**`start.sh`**
+
+This Bash script automates the setup and deployment process for the project. It begins by loading environment variables from a `.env` file and exporting them. It then navigates to the Terraform directory to initialize and apply the Terraform configurations, setting up the necessary infrastructure. After returning to the main directory, it builds a Docker image and logs in to AWS ECR. The script tags the Docker image and pushes it to the ECR repository. Finally, it starts the Docker containers using `docker compose up`.
 
 **`run_flow.py`**
 
