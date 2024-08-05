@@ -54,23 +54,27 @@ Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect t
 
 ## 🚀 Running the Project
 
-To run the project, simply run the start script which will perform the necessary setup using `Terraform`, and then build and run a docker image. 
+To run the project, simply run the following command. Docker will create services for `mlflow`, `postgres`, `adminer`, `grafana`, and `app`. The `app` service will execute a start script that initializes and applies `Terraform` before running the flow.
 
 ```bash
-./start.sh
+docker compose up
 ```
 
 ## 🌐 Viewing Prefect Cloud
 
-The app service provides a link to Prefect Cloud. Open this link to access the Prefect Cloud UI, which offers detailed insights into deployments and previous runs. While the deployment is scheduled to run hourly, you can manually initiate a run by clicking 'Run' for immediate execution.
+The app service provides a link [https://app.prefect.cloud/auth/resume](https://app.prefect.cloud/auth/resume) to Prefect Cloud. Open this link to access the Prefect Cloud UI, which offers detailed insights into deployments and previous runs. While the deployment is scheduled to run hourly, you can manually initiate a run by clicking 'Run' for immediate execution.
 
 ## 🛠️ Infrastructure Provisioning with Terraform
 
 This project leverages Terraform to automate the setup of AWS S3 buckets for storing model artifacts and predictions, as well as an Amazon ECR repository for the Docker image. Utilizing Terraform ensures that the infrastructure is provisioned consistently and reproducibly, reducing the risk of manual errors. This automation is crucial for maintaining a reliable workflow, especially in a production environment. It is important to note that the user should manually create an S3 bucket for storing the Terraform state, which helps in tracking infrastructure changes over time and enables collaborative infrastructure management.
 
+## 🧪 Experiment and Model Tracking with MLFlow
+
+This project utilizes MLFlow for experiment and model tracking, allowing users to log metrics, parameters, and artifacts for their machine learning experiments. By providing a centralized place to track model performance, MLFlow ensures reproducibility and simplifies the comparison of different model runs. This tool is essential for maintaining an organized workflow and improving model management over time. To view and manage experiments, navigate to [http://localhost:5000/](http://localhost:5000/).
+
 ## 📈 Monitoring with Evidently and Grafana
 
-For effective monitoring of the model's performance and data quality, this project utilizes Evidently and Grafana. Users can access the monitoring dashboard by navigating to http://localhost:3000/login and logging in with the username 'admin' and password 'admin'. Once logged in, navigate to the dashboards section to view a comprehensive dashboard that displays key metrics such as test RMSE, prediction drift, the number of drifted columns, and the number of missing values. This setup ensures continuous insight into the model's performance and data integrity, facilitating prompt detection and resolution of any issues.
+For effective monitoring of the model's performance and data quality, this project utilizes Evidently and Grafana. Users can access the monitoring dashboard by navigating to [http://localhost:3000/login](http://localhost:3000/login) and logging in with the username 'admin' and password 'admin'. Once logged in, navigate to the dashboards section to view a comprehensive dashboard that displays key metrics such as test RMSE, prediction drift, the number of drifted columns, and the number of missing values. This setup ensures continuous insight into the model's performance and data integrity, facilitating prompt detection and resolution of any issues.
 
 ## 🔍 How It Works
 
@@ -82,7 +86,7 @@ This Jupyter notebook is used for exploratory data analysis (EDA) and initial ex
 
 **`start.sh`**
 
-This Bash script automates the setup and deployment process for the project. It begins by loading environment variables from a `.env` file and exporting them. It then navigates to the Terraform directory to initialize and apply the Terraform configurations, setting up the necessary infrastructure. After returning to the main directory, it builds a Docker image and logs in to AWS ECR. The script tags the Docker image and pushes it to the ECR repository. Finally, it starts the Docker containers using `docker compose up`.
+This Bash script automates the setup and deployment process for the project. It begins by loading environment variables from a `.env file` and exporting them. The script then navigates to the Terraform directory to initialize and apply the Terraform configurations, setting up the necessary infrastructure. After returning to the main directory, it logs in to AWS ECR. The script tags the Docker image and pushes it to the ECR repository.
 
 **`run_flow.py`**
 
