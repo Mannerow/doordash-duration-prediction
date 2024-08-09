@@ -52,17 +52,6 @@ TF_VAR_ecr_repository_name='ECR-REPO-NAME'
 
 Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect the new bucket. 
 
-**5. Additional Step for Windows Users:**
-
-Windows users must convert the line endings of their script and environment files to Unix-style. This is because Windows uses a different line ending format (CRLF) compared to Unix/Linux (LF), which can cause issues when running scripts in a Unix-based environment like Docker.
-
-Run the following command to convert the line endings:
-
-```bash
-dos2unix start.sh
-dos2unix .env
-```
-
 ## 🚀 Running the Project
 
 To run the project, simply run the following command. Docker will create services for `mlflow`, `postgres`, `adminer`, `grafana`, and `app`. The `app` service will execute a start script that initializes and applies `Terraform` before running the flow.
