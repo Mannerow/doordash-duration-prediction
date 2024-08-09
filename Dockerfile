@@ -36,11 +36,11 @@ RUN apt-get update && \
 # Install dos2unix
 RUN apt-get update && apt-get install -y dos2unix
 
-# Convert line endings before copying
-RUN dos2unix /app/start.sh /app/.env
-
 # Copy the current directory contents into the container at /app
 COPY . /app
+
+# Convert line endings
+RUN dos2unix /app/start.sh /app/.env
 
 # Make the start script executable
 RUN chmod +x /app/start.sh
