@@ -16,21 +16,17 @@ This project requires Kaggle, AWS, and Prefect accounts. Kaggle is used to downl
 
 To get started with the project, follow these steps:
 
-**1. Install Terraform:**
-
-Visit this [link](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) and follow the instructions to install Terraform on your system.
-
-**2. Clone the repository:**
+**1. Clone the repository:**
 
 ```bash
 git clone https://github.com/Mannerow/doordash-duration-prediction
 cd doordash-duration-prediction
 ```
 
-**3. Set up Authentication:**
+**2. Set up Authentication:**
 
-1. Place your kaggle.json in the root directory of this project.
-2. Create a .env file which will contain the necessary environment variables for AWS and Prefect authentication, S3 bucket and ECR names, and the MLFLow Endpoint. 
+- Place your kaggle.json in the root directory of this project.
+- Create a .env file which will contain the necessary environment variables for AWS and Prefect authentication, S3 bucket and ECR names, and the MLFLow Endpoint. 
 
 ```bash
 MLFLOW_TRACKING_URI=http://mlflow:5000
@@ -48,9 +44,19 @@ TF_VAR_prediction_bucket='PREDICTION-BUCKET-NAME'
 TF_VAR_ecr_repository_name='ECR-REPO-NAME'
 ```
 
-**4. Manually create an S3 bucket for the Terraform state:**
+**3. Manually create an S3 bucket for the Terraform state:**
 
 Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect the new bucket. 
+
+**4. Windows Users — Prevent Line Ending Issues with Git:**
+
+If you're using Windows, you may encounter issues with line endings being automatically converted from `LF` (Unix) to `CRLF` (Windows) when checking out files. This can cause problems with script execution in Docker.
+
+To prevent this, configure Git to ensure scripts like `start.sh` maintain the correct LF line endings by running the following command in Git Bash or the command prompt:
+
+```bash
+git config --global core.autocrlf input
+```
 
 ## 🚀 Running the Project
 
