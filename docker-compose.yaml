@@ -20,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: $TF_VAR_ecr_repository_name:latest
     command: >
       /bin/bash -c "
       echo 'Running start.sh' &&
