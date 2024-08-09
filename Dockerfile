@@ -33,12 +33,17 @@ RUN apt-get update && \
     apt-get install -y docker-ce-cli && \
     apt-get clean
 
-# Copy the start script into the container at /app and make it executable
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Install dos2unix
+RUN apt-get update && apt-get install -y dos2unix
 
 # Copy the current directory contents into the container at /app
 COPY . /app
+
+# Convert line endings to Unix format
+RUN dos2unix /app/start.sh /app/.env
+
+# Make the start script executable
+RUN chmod +x /app/start.sh
 
 # Create the .kaggle directory and copy kaggle.json into it
 RUN mkdir -p /root/.kaggle && cp /app/kaggle.json /root/.kaggle/kaggle.json
