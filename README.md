@@ -26,23 +26,13 @@ cd doordash-duration-prediction
 **2. Set up Authentication:**
 
 - Place your kaggle.json in the root directory of this project.
-- Create a .env file which will contain the necessary environment variables for AWS and Prefect authentication, S3 bucket and ECR names, and the MLFLow Endpoint. 
+- Copy `.env.template` to `.env` using the following command:  
 
 ```bash
-MLFLOW_TRACKING_URI=http://mlflow:5000
-MLFLOW_DEFAULT_ARTIFACT_ROOT='S3-BUCKET-PATH'
-MLFLOW_BACKEND_STORE_URI='sqlite:///backend.db'
-AWS_ACCESS_KEY_ID='YOUR-ACCESS-KEY'
-AWS_SECRET_ACCESS_KEY='YOUR-SECRET-ACCESS-KEY'
-AWS_DEFAULT_REGION=us-east-1
-AWS_ACCOUNT_ID='YOUR-ACCOUNT-ID'
-PREFECT_API_KEY='YOUR-PREFECT-API-KEY'
-PREFECT_WORKSPACE='YOUR-PREFECT-WORKSPACE-NAME'
-TF_VAR_aws_region=us-east-1
-TF_VAR_mlflow_models_bucket='MODEL-BUCKET-NAME'
-TF_VAR_prediction_bucket='PREDICTION-BUCKET-NAME'
-TF_VAR_ecr_repository_name='ECR-REPO-NAME'
+cp .env.template .env
 ```
+
+- **Important:** Open the .env file and fill in all required details before proceeding.
 
 **3. Manually create an S3 bucket for the Terraform state:**
 
