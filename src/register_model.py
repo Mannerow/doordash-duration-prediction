@@ -46,8 +46,8 @@ def train_and_log_model(data_path, params):
         model.fit(X_train, y_train)
 
         # Evaluate model on the validation and test sets
-        # val_rmse = mean_squared_error(y_val, model.predict(X_val), squared=False)
-        # mlflow.log_metric("val_rmse", val_rmse)
+        val_rmse = mean_squared_error(y_val, model.predict(X_val), squared=False)
+        mlflow.log_metric("val_rmse", val_rmse)
         #rint(f"Logged val_rmse: {val_rmse}")
         test_rmse = mean_squared_error(y_test, model.predict(X_test), squared=False)
         mlflow.log_metric("test_rmse", test_rmse)
