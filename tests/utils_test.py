@@ -1,9 +1,11 @@
 import pytest
 from unittest.mock import patch, mock_open
 import pickle
+import pandas as pd
+from scipy.sparse import csr_matrix
+from sklearn.feature_extraction import DictVectorizer
 
-# Assuming these functions are in a file named 'utils.py'
-from src.utils import load_pickle, dump_pickle
+from src.utils import load_pickle, dump_pickle, decode_dataframe
 
 def test_load_pickle():
     # Simulates the content in the pickle file
@@ -43,3 +45,118 @@ def test_dump_pickle():
             
             # Assert that the file handle provided by mock_open was used to write data
             assert mock_pickle_dump.called
+
+def test_decode_dataframe_dense():
+    # Sample dense DataFrame
+    data = {
+        "market_id": [1, 2],
+        "created_at": ["2023-01-01", "2023-01-02"],
+        "store_id": [111, 222],
+        "store_primary_category=fast_food": [1, 0],
+        "store_primary_category=grocery": [0, 1],
+        "total_items": [10, 20],
+        "subtotal": [100, 200]
+    }
+    df = pd.DataFrame(data)
+    
+    # Mock DictVectorizer
+    dv = DictVectorizer(sparse=False)
+    dv.fit([{"store_primary_category": "fast_food"}, {"store_primary_category": "grocery"}])
+    
+    # Decode DataFrame
+    result = decode_dataframe(dv, df)
+    
+    # Expected output with all columns
+    expected_data = {
+        "market_id": [1, 2],
+        "created_at": ["2023-01-01", "2023-01-02"],
+        "actual_delivery_time": [0, 0],  # filled with default value
+        "store_id": [111, 222],
+        "store_primary_category": ["fast_food", "grocery"],
+        "order_protocol": [0, 0],  # filled with default value
+        "total_items": [10, 20],
+        "subtotal": [100, 200],
+        "num_distinct_items": [0, 0],  # filled with default value
+        "min_item_price": [0, 0],  # filled with default value
+        "max_item_price": [0, 0],  # filled with default value
+        "total_onshift_dashers": [0, 0],  # filled with default value
+        "total_busy_dashers": [0, 0],  # filled with default value
+        "total_outstanding_orders": [0, 0],  # filled with default value
+        "estimated_order_place_duration": [0, 0],  # filled with default value
+        "estimated_store_to_consumer_driving_duration": [0, 0]  # filled with default value
+    }
+    expected_df = pd.DataFrame(expected_data)
+    
+    pd.testing.assert_frame_equal(result, expected_df)
+
+def test_decode_dataframe_sparse():
+    # Sample sparse matrix and feature names
+    sparse_data = csr_matrix([[1, 0, 3, 1200], [0, 1, 2, 2400]])
+    feature_names = ["store_primary_category=fast_food", "store_primary_category=grocery", "total_items", "subtotal"]
+    
+    # Mock DictVectorizer
+    dv = DictVectorizer(sparse=True)
+    dv.feature_names_ = feature_names
+    
+    # Decode DataFrame
+    result = decode_dataframe(dv, sparse_data)
+    
+    # Expected output with all columns
+    expected_data = {
+        "market_id": [0, 0],
+        "created_at": [0, 0],
+        "actual_delivery_time": [0, 0],
+        "store_id": [0, 0],
+        "store_primary_category": ["fast_food", "grocery"],
+        "order_protocol": [0, 0],
+        "total_items": [3, 2],
+        "subtotal": [1200, 2400],
+        "num_distinct_items": [0, 0],
+        "min_item_price": [0, 0],
+        "max_item_price": [0, 0],
+        "total_onshift_dashers": [0, 0],
+        "total_busy_dashers": [0, 0],
+        "total_outstanding_orders": [0, 0],
+        "estimated_order_place_duration": [0, 0],
+        "estimated_store_to_consumer_driving_duration": [0, 0]
+    }
+    expected_df = pd.DataFrame(expected_data)
+
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print("Expected")
+        print(expected_df)
+        print("Result")
+        print(result)
+    
+    pd.testing.assert_frame_equal(result, expected_df)
+
+# def test_decode_dataframe_missing_column():
+#     # Sample DataFrame missing 'total_items'
+#     data = {
+#         "market_id": [1],
+#         "created_at": ["2023-01-01"],
+#         "store_id": [111],
+#         "store_primary_category=Food": [1],
+#         "subtotal": [100]
+#     }
+#     df = pd.DataFrame(data)
+    
+#     # Mock DictVectorizer
+#     dv = DictVectorizer(sparse=False)
+#     dv.fit([{"store_primary_category": "Food"}])
+    
+#     # Decode DataFrame
+#     result = decode_dataframe(dv, df)
+    
+#     # Expected output with missing 'total_items' handled (e.g., filled with 0)
+#     expected_data = {
+#         "market_id": [1],
+#         "created_at": ["2023-01-01"],
+#         "store_id": [111],
+#         "store_primary_category": ["Food"],
+#         "total_items": [0],  # filled with 0
+#         "subtotal": [100]
+#     }
+#     expected_df = pd.DataFrame(expected_data)
+    
+#     pd.testing.assert_frame_equal(result, expected_df)
