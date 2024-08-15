@@ -94,8 +94,9 @@ def test_decode_dataframe_sparse():
     sparse_data = csr_matrix([[1, 0, 3, 1200], [0, 1, 2, 2400]])
     feature_names = ["store_primary_category=fast_food", "store_primary_category=grocery", "total_items", "subtotal"]
     
-    # Mock DictVectorizer
+    # Mock DictVectorizer, converts feature dictionaries to dense or sparse matrices
     dv = DictVectorizer(sparse=True)
+    # Manually setting feature names to similate behaviour of DictVectorizer that has been fit on these features
     dv.feature_names_ = feature_names
     
     # Decode DataFrame
@@ -130,33 +131,44 @@ def test_decode_dataframe_sparse():
     
     pd.testing.assert_frame_equal(result, expected_df)
 
-# def test_decode_dataframe_missing_column():
-#     # Sample DataFrame missing 'total_items'
-#     data = {
-#         "market_id": [1],
-#         "created_at": ["2023-01-01"],
-#         "store_id": [111],
-#         "store_primary_category=Food": [1],
-#         "subtotal": [100]
-#     }
-#     df = pd.DataFrame(data)
+# Tests that any missing columns from the dataframe are added to the output and filled with default values
+def test_decode_dataframe_missing_column():
+    # Sample DataFrame missing 'total_items' and other columns
+    data = {
+        "market_id": [1],
+        "created_at": ["2023-01-01"],
+        "store_id": [111],
+        "store_primary_category=fast_food": [1],
+        "subtotal": [100]
+    }
+    df = pd.DataFrame(data)
     
-#     # Mock DictVectorizer
-#     dv = DictVectorizer(sparse=False)
-#     dv.fit([{"store_primary_category": "Food"}])
+    # Mock DictVectorizer
+    dv = DictVectorizer(sparse=False)
+    dv.fit([{"store_primary_category": "fast_food"}])
     
-#     # Decode DataFrame
-#     result = decode_dataframe(dv, df)
+    # Decode DataFrame
+    result = decode_dataframe(dv, df)
     
-#     # Expected output with missing 'total_items' handled (e.g., filled with 0)
-#     expected_data = {
-#         "market_id": [1],
-#         "created_at": ["2023-01-01"],
-#         "store_id": [111],
-#         "store_primary_category": ["Food"],
-#         "total_items": [0],  # filled with 0
-#         "subtotal": [100]
-#     }
-#     expected_df = pd.DataFrame(expected_data)
+    # Expected output with all columns, missing ones filled with default values
+    expected_data = {
+        "market_id": [1],
+        "created_at": ["2023-01-01"],
+        "actual_delivery_time": [0],  # filled with default value
+        "store_id": [111],
+        "store_primary_category": ["fast_food"],
+        "order_protocol": [0],  # filled with default value
+        "total_items": [0],  # filled with 0 because it was missing
+        "subtotal": [100],
+        "num_distinct_items": [0],  # filled with default value
+        "min_item_price": [0],  # filled with default value
+        "max_item_price": [0],  # filled with default value
+        "total_onshift_dashers": [0],  # filled with default value
+        "total_busy_dashers": [0],  # filled with default value
+        "total_outstanding_orders": [0],  # filled with default value
+        "estimated_order_place_duration": [0],  # filled with default value
+        "estimated_store_to_consumer_driving_duration": [0]  # filled with default value
+    }
+    expected_df = pd.DataFrame(expected_data)
     
-#     pd.testing.assert_frame_equal(result, expected_df)
+    pd.testing.assert_frame_equal(result, expected_df)
