@@ -35,8 +35,8 @@ mlflow.set_experiment("model-train")
 def run_train(data_path: str):
     models = {
         "LinearRegression": LinearRegression(),
-        "XGBRegressor": XGBRegressor(max_depth=5, n_estimators=50, random_state=RANDOM_STATE)
-        # "Ridge": Ridge(alpha=0.5, random_state=RANDOM_STATE)  # Adjusted alpha for less complexity
+        "XGBRegressor": XGBRegressor(max_depth=5, n_estimators=50, random_state=RANDOM_STATE),
+        "Ridge": Ridge(alpha=0.5, random_state=RANDOM_STATE)  # Adjusted alpha for less complexity
     }
 
     for model_name, model in models.items():

@@ -16,8 +16,7 @@ def read_dataframe(raw_data_path: str):
     # Load the CSV file into a pandas DataFrame
     df = pd.read_csv(csv_file_path)
 
-    #Remove this later. Just take half the dataset.
-    # Return a random sample of half the dataset
+    # Return a random sample of half the dataset (fixes OOM errors)
     half_df = df.sample(frac=0.50, random_state=1)  # random_state ensures reproducibility
     return half_df
 

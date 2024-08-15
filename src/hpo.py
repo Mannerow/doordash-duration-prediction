@@ -74,12 +74,12 @@ def run_optimization(data_path: str, num_trials: int):
             'subsample': hp.uniform('subsample', 0.8, 1.0),
             'colsample_bytree': hp.uniform('colsample_bytree', 0.8, 1.0),
             'random_state': RANDOM_STATE
+        },
+        {
+            'type': 'Ridge',
+            'alpha': hp.loguniform('alpha', np.log(0.001), np.log(1)),  # Narrower range for alpha
+            'random_state': RANDOM_STATE
         }
-        # {
-        #     'type': 'Ridge',
-        #     'alpha': hp.loguniform('alpha', np.log(0.001), np.log(1)),  # Narrower range for alpha
-        #     'random_state': RANDOM_STATE
-        # }
     ])
 
     rstate = np.random.default_rng(RANDOM_STATE)  # for reproducible results
