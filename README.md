@@ -4,6 +4,21 @@
 
 The objective of this project is to predict the delivery duration for DoorDash orders using historical data. This involves developing a machine learning model that can accurately forecast the time it will take for a delivery to reach the customer from the moment an order is placed. The project will leverage MLOps principles to ensure robust experimentation, model tracking, monitoring, infrastructure provisioning, and automation throughout the development and deployment lifecycle.
 
+- [doordash-duration-prediction](#doordash-duration-prediction)
+  - [📄 Problem Description](#-problem-description)
+  - [📊 Dataset](#-dataset)
+  - [🔒 Authentication](#-authentication)
+  - [⚙️ Installation](#️-installation)
+  - [🚀 Running the Project](#-running-the-project)
+  - [🌐 Viewing Prefect Cloud](#-viewing-prefect-cloud)
+  - [🛠️ Infrastructure Provisioning with Terraform](#️-infrastructure-provisioning-with-terraform)
+  - [🧪 Experiment and Model Tracking with MLFlow](#-experiment-and-model-tracking-with-mlflow)
+  - [📈 Monitoring with Evidently and Grafana](#-monitoring-with-evidently-and-grafana)
+  - [🔍 How It Works](#-how-it-works)
+  - [🔄 Reproducability](#-reproducability)
+  - [🚀✨ MLOps Best Practices](#-mlops-best-practices)
+    - [Pre-Commit Hooks](#pre-commit-hooks)
+
 ## 📊 Dataset
 
 The dataset used for this project is sourced from Kaggle and contains various features related to DoorDash orders, such as pickup and drop-off locations, timestamps, order size, and other relevant attributes. The dataset can be found at DoorDash ETA Prediction Dataset.
