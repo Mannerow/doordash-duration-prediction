@@ -1,7 +1,11 @@
 import os
+import sys
 import pandas as pd
 from unittest.mock import patch, MagicMock
 from src.data_preprocess import read_dataframe
+
+# Ensure the src directory is in the path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 def test_read_dataframe():
     # Sample data to return from the mocked pd.read_csv
