@@ -17,6 +17,7 @@ The objective of this project is to predict the delivery duration for DoorDash o
   - [🔍 How It Works](#-how-it-works)
   - [🔄 Reproducability](#-reproducability)
   - [🚀✨ MLOps Best Practices](#-mlops-best-practices)
+    - [Makefile](#makefile)
     - [Pre-Commit Hooks](#pre-commit-hooks)
 
 ## 📊 Dataset
@@ -65,11 +66,13 @@ git config --global core.autocrlf input
 
 ## 🚀 Running the Project
 
-To run the project, simply run the following command. Docker will create services for `mlflow`, `postgres`, `adminer`, `grafana`, and `app`. The `app` service will execute a start script that initializes and applies `Terraform` before running the flow.
+To run the project, simply run the following command:
 
 ```bash
-docker compose up
+make run
 ```
+
+This command triggers a `Makefile` target that automates the process of setting up and running the application. It ensures that `Docker` creates and starts services including `mlflow`, `postgres`, `adminer`, `grafana`, and the main app. For the app service, it also executes a start script that initializes and applies `Terraform` configurations before running the main application flow.
 
 ## 🌐 Viewing Prefect Cloud
 
@@ -143,9 +146,24 @@ To ensure reproducibility, this project’s environment is managed with `pipenv`
 
 ## 🚀✨ MLOps Best Practices
 
+### Makefile
+
+A `Makefile` simplifies software development by defining targets that automate command sequences, reducing the need to manually input complex commands. Each target can perform tasks, run scripts, or manage dependencies efficiently. Here's an overview of the commands provided:
+
+- **`setup`**: Installs development dependencies and sets up pre-commit hooks.
+- **`test`**: Runs unit tests using `pytest`.
+- **`integration_test`**: Placeholder for testing interactions between different components of your application.
+- **`quality_checks`**: Performs code formatting with `isort` and `black`.
+- **`terraform-init`**: Initializes Terraform configurations.
+- **`terraform-apply`**: Applies Terraform configurations.
+- **`build`**: Builds a Docker image after passing tests and quality checks.
+- **`push`**: Pushes the Docker image to AWS ECR.
+- **`run`**: Starts Docker containers after tests.
+- **`all`**: Builds and pushes the Docker image by running the `push` command.
+
 ### Pre-Commit Hooks
 
-To ensure code quality and consistency across the project, follow these steps to set up and use pre-commit hooks:
+A pre-commit hook is a script that runs automatically before each commit to check for code errors and style violations, ensuring that only high-quality code is committed to the repository. Use the following steps to set up and use pre-commit hooks:
 
 **1. Clone the Repository**
 
@@ -154,27 +172,17 @@ git clone https://github.com/Mannerow/doordash-duration-prediction
 cd doordash-duration-prediction
 ```
 
-**2. Install Dependencies**
+**2. Setup the Development Environment**
+
+Instead of manually installing dependencies and pre-commit hooks, you can simply run the make setup command which automates these steps:
 
 ```bash
-pipenv install --dev
+make setup
 ```
 
-**3. Enter the Pipenv Environment**
+This command initializes the development environment by installing all necessary dependencies and setting up pre-commit hooks as specified in the .pre-commit-config.yaml file.
 
-```bash
-pipenv shell
-```
-
-**4. Install Pre-commit Hooks**
-
-After setting up the environment, install the pre-commit hooks specified in the .pre-commit-config.yaml file:
-
-```bash
-pre-commit install
-```
-
-**5. Make and Commit Changes**
+**3. Make and Commit Changes**
 
 ```bash
 git add <files>
