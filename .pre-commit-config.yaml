@@ -15,21 +15,18 @@ repos:
         entry: isort
         language: python
         types: [python]
-repos:
 -   repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
     - id: black
       language_version: python3.9
-# - repo: local
-#     hooks:
-#         - id: pytest-check
-#         name: pytest-check
-#         entry: pytest
-#         language: system
-#         pass_filenames: false
-#         always_run: true
-#         args: [
-#             "tests/"
-#         ]
-# Add lint pre-commit hooks
+-   repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        args:
+          - "tests/"
