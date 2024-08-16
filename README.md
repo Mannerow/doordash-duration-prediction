@@ -26,7 +26,7 @@ cd doordash-duration-prediction
 **2. Set up Authentication:**
 
 - Place your kaggle.json in the root directory of this project.
-- Copy `.env.template` to `.env` using the following command:  
+- Copy `.env.template` to `.env` using the following command:
 
 ```bash
 cp .env.template .env
@@ -36,7 +36,7 @@ cp .env.template .env
 
 **3. Manually create an S3 bucket for the Terraform state:**
 
-Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect the new bucket. 
+Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect the new bucket.
 
 **4. Windows Users — Prevent Line Ending Issues with Git:**
 
@@ -125,3 +125,43 @@ This script contains utility functions that are utilized across different projec
 ## 🔄 Reproducability
 
 To ensure reproducibility, this project’s environment is managed with `pipenv`. While `pipenv` is the primary tool for handling dependencies, a `requirements.txt` file is also included for reference purposes. This helps users understand the specific packages and versions used in the project.
+
+## 🚀✨ MLOps Best Practices
+
+### Pre-Commit Hooks
+
+To ensure code quality and consistency across the project, follow these steps to set up and use pre-commit hooks:
+
+**1. Clone the Repository**
+
+```bash
+git clone https://github.com/Mannerow/doordash-duration-prediction
+cd doordash-duration-prediction
+```
+
+**2. Install Dependencies**
+
+```bash
+pipenv install --dev
+```
+
+**3. Enter the Pipenv Environment**
+
+```bash
+pipenv shell
+```
+
+**4. Install Pre-commit Hooks**
+
+After setting up the environment, install the pre-commit hooks specified in the .pre-commit-config.yaml file:
+
+```bash
+pre-commit install
+```
+
+**5. Make and Commit Changes**
+
+```bash
+git add <files>
+git commit -m "Your commit message"
+```
