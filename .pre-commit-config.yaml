@@ -15,3 +15,9 @@ repos:
         entry: isort
         language: python
         types: [python]
+repos:
+-   repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+    - id: black
+      language_version: python3.9
