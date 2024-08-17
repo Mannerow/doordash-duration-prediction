@@ -80,15 +80,32 @@ def run_monitor_metrics():
 
 @flow(log_prints=True)
 def ml_workflow():
+    print("🔄 Preprocessing the data...")
+
     data_preprocess_result = run_data_preprocess()
+
+    print("🏋️ Training the models...")
+
     train_result = run_train(wait_for=[data_preprocess_result])
+
+    print("🎛️ Tuning hyperparameters...")
+
     hpo_result = run_hpo(wait_for=[train_result])  # Dependency managed by wait_for
+
+    print("🏆 Registering the best model...")
+
     register_model_result = run_register_model(
         wait_for=[hpo_result]
     )  # Dependency managed by wait_for
+
+    print("🔮 Making predictions...")
+
     score_batch_result = run_score_batch(
         wait_for=[register_model_result]
     )  # Dependency managed by wait_for
+
+    print("📊 Monitoring...")
+
     monitor_metrics_result = run_monitor_metrics(
         wait_for=[score_batch_result]
     )  # Dependency managed by wait_for
