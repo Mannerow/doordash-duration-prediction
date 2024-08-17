@@ -22,7 +22,7 @@ The objective of this project is to predict the delivery duration for DoorDash o
 
 ## 📊 Dataset
 
-The dataset used for this project is sourced from [Kaggle](https://www.kaggle.com/datasets/dharun4772/doordash-eta-prediction) and contains various features related to DoorDash orders, such as pickup and drop-off locations, timestamps, order size, and other relevant attributes. The dataset can be found at DoorDash ETA Prediction Dataset.
+The dataset used for this project is sourced from [Kaggle](https://www.kaggle.com/datasets/dharun4772/doordash-eta-prediction) and contains various features related to DoorDash orders, such as pickup and drop-off locations, timestamps, order size, and other relevant attributes.
 
 ## 🔒 Authentication
 
