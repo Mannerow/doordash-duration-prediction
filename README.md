@@ -69,10 +69,10 @@ git config --global core.autocrlf input
 To run the project, simply run the following command:
 
 ```bash
-make run
+docker compose up
 ```
 
-This command triggers a `Makefile` target that automates the process of setting up and running the application. It ensures that `Docker` creates and starts services including `mlflow`, `postgres`, `adminer`, `grafana`, and the main app. For the app service, it also executes a start script that initializes and applies `Terraform` configurations before running the main application flow.
+This command will start a multi-container Docker project, setting up and starting all necessary services, including `mlflow`, `postgres`, `adminer`, `grafana`, and the main application.
 
 ## 🌐 Viewing Prefect Cloud
 
@@ -149,6 +149,47 @@ To ensure reproducibility, this project’s environment is managed with `pipenv`
 ### Makefile
 
 A `Makefile` simplifies software development by defining targets that automate command sequences, reducing the need to manually input complex commands. Each target can perform tasks, run scripts, or manage dependencies efficiently. Here's an overview of the commands provided:
+
+**Important:** To use the Makefile, users will need to have both pipenv and Make installed on their system.
+
+#### 🛠 Installing Make and Pipenv
+
+**Windows:**
+
+**1. Download and Install Make:**
+
+- Download the latest version of Make for Windows.
+- Install the downloaded package.
+
+**2. Install Pipenv:**
+
+- Open your terminal (Command Prompt, Git Bash, or PowerShell).
+- Install Pipenv using `pip`:
+
+```bash
+pip install pipenv
+```
+
+**Linux:**
+
+**1. Install Make:**
+
+- Use your package manager (e.g., `apt`, `yum`, `dnf`):
+
+```bash
+sudo apt-get install make
+```
+
+**2. Install Pipenv:**
+
+- Open your terminal (Command Prompt, Git Bash, or PowerShell).
+- Install Pipenv using `pip`:
+
+```bash
+pip install pipenv
+```
+
+#### 📜 Makefile Commands Overview
 
 - **`setup`**: Installs development dependencies and sets up pre-commit hooks.
 - **`test`**: Runs unit tests using `pytest`.
