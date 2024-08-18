@@ -7,6 +7,7 @@ IMAGE_TAG ?= latest
 # AWS ECR repository address
 ECR_REPO ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(TF_VAR_aws_region).amazonaws.com/$(IMAGE_NAME)
 
+# Local Setup
 setup:
 	@echo "🚀 Setting up the environment..."
 	pip install pipenv==2024.0.1 && pipenv install --dev
@@ -31,10 +32,18 @@ quality_checks:
 	# pylint --recursive=y .
 
 # Terraform commands
+
+# Initialize Terraform
 terraform-init:
 	@echo "🔧 Initializing Terraform..."
 	cd ./infrastructure/ && terraform init -reconfigure
 
+# Plan Terraform changes
+terraform-plan:
+	@echo "📋 Planning Terraform changes..."
+	cd ./infrastructure/ && terraform plan
+
+# Apply Terraform configuration
 terraform-apply:
 	@echo "🚀 Applying Terraform configuration..."
 	cd ./infrastructure/ && terraform apply -auto-approve

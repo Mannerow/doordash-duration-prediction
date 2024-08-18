@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: 3.9
 
-      # Python Cache,reuses dependencies if they haven't changed
+      # Python Cache, reuses dependencies if they haven't changed
       - name: Cache pip
         uses: actions/cache@v3
         with:
@@ -32,24 +32,13 @@ jobs:
         working-directory: '.'
         run: make setup
 
+      - name: Run Unit tests
+        working-directory: "."
+        run: make test
+
       - name: Run Quality tests
         working-directory: '.'
         run: make quality_checks
-
-      - name: Run Integration tests
-        working-directory: '.'
-        run: make integration_test
-
-  tf-plan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.0.0
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -58,10 +47,30 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
-      - name: TF plan-stage
-        working-directory: '06-best-practices/code-practice'
-        run: make plan_stage
+      - name: Run Integration tests
+        working-directory: '.'
+        run: make integration_test
 
-      - name: TF plan-prod
-        working-directory: '06-best-practices/code-practice'
-        run: make plan_prod
+
+  tf-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+      working-directory: '.'
+      run: make terraform-init
+
+    - name: Terraform Plan
+      id: plan
+      working-directory: '.'
+      run: make terraform-plan
