@@ -18,7 +18,7 @@ setup:
 # Run pytest on the tests directory
 test: setup
 	@echo "🔍 Running tests with pytest..."
-	pytest tests/
+	pipenv run pytest tests/
 
 # Placeholder for integration tests
 integration_test: test
@@ -28,10 +28,10 @@ integration_test: test
 # Perform quality checks with isort and black
 quality_checks:
 	@echo "🔍 Performing code quality checks..."
-	isort .
-	black .
+	pipenv run isort .
+	pipenv run black .
 	# Uncomment the next line to include pylint checks
-	# pylint --recursive=y .
+	# pipenv run pylint --recursive=y .
 
 # Terraform commands
 
