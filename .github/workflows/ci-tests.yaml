@@ -51,11 +51,12 @@ jobs:
         working-directory: '.'
         run: make integration_test
 
-
   tf-plan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -64,13 +65,13 @@ jobs:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-      working-directory: '.'
-      run: make terraform-init
+        working-directory: '.'
+        run: make terraform-init
 
-    - name: Terraform Plan
-      id: plan
-      working-directory: '.'
-      run: make terraform-plan
+      - name: Terraform Plan
+        id: plan
+        working-directory: '.'
+        run: make terraform-plan
