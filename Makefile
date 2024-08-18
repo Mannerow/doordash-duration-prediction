@@ -13,18 +13,15 @@ setup:
 	pip install pipenv==2024.0.1 && \
 	pipenv install --dev && \
 	pipenv run pip install pre-commit && \
-	pipenv run pre-commit install && \
-	set -a && \
-	. .env && \
-	set +a
+	pipenv run pre-commit install
 
 # Run pytest on the tests directory
-test: setup
+test:
 	@echo "🔍 Running tests with pytest..."
 	pipenv run pytest tests/
 
 # Placeholder for integration tests
-integration_test: test
+integration_test:
 	@echo "⚙️  Running integration tests..."
 	# TODO: Add commands for running integration tests here
 
