@@ -10,10 +10,13 @@ ECR_REPO ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(TF_VAR_aws_region).amazonaws.com/$(IMAGE
 # Local Setup
 setup:
 	@echo "🚀 Setting up the environment..."
-	pip install pipenv==2024.0.1
-	pipenv install --dev
-	pipenv run pip install pre-commit
-	pipenv run pre-commit install
+	pip install pipenv==2024.0.1 && \
+	pipenv install --dev && \
+	pipenv run pip install pre-commit && \
+	pipenv run pre-commit install && \
+	set -a && \
+	source .env && \
+	set +a
 
 # Run pytest on the tests directory
 test: setup
@@ -28,7 +31,7 @@ integration_test: test
 # Perform quality checks with isort and black
 quality_checks:
 	@echo "🔍 Performing code quality checks..."
-	pipenv run isort .
+	pipenv run isort . && \
 	pipenv run black .
 	# Uncomment the next line to include pylint checks
 	# pipenv run pylint --recursive=y .
@@ -58,8 +61,8 @@ build: quality_checks test
 # Push the Docker image only if it has been successfully built
 push: build
 	@echo "🚀 Pushing Docker image to ECR..."
-	aws ecr get-login-password --region $(TF_VAR_aws_region) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(TF_VAR_aws_region).amazonaws.com
-	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(ECR_REPO):$(IMAGE_TAG)
+	aws ecr get-login-password --region $(TF_VAR_aws_region) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(TF_VAR_aws_region).amazonaws.com && \
+	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(ECR_REPO):$(IMAGE_TAG) && \
 	docker push $(ECR_REPO):$(IMAGE_TAG)
 
 # Start the Docker containers only after running tests
