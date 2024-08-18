@@ -15,7 +15,7 @@ setup:
 	pipenv run pip install pre-commit && \
 	pipenv run pre-commit install && \
 	set -a && \
-	source .env && \
+	. .env && \
 	set +a
 
 # Run pytest on the tests directory
