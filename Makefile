@@ -10,8 +10,10 @@ ECR_REPO ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(TF_VAR_aws_region).amazonaws.com/$(IMAGE
 # Local Setup
 setup:
 	@echo "🚀 Setting up the environment..."
-	pip install pipenv==2024.0.1 && pipenv install --dev
-	pre-commit install
+	pip install pipenv==2024.0.1
+	pipenv install --dev
+	pipenv run pip install pre-commit
+	pipenv run pre-commit install
 
 # Run pytest on the tests directory
 test: setup
