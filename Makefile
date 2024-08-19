@@ -40,7 +40,7 @@ terraform-init:
 	@echo "🔧 Initializing Terraform..."
 	cd ./infrastructure/ && terraform init -reconfigure
 
-# Plan Terraform changes
+# Plan Terraform changes. Test
 terraform-plan:
 	@echo "📋 Planning Terraform changes..."
 	cd ./infrastructure/ && terraform plan
