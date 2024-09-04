@@ -69,15 +69,15 @@ jobs:
 
       - name: Terraform Init
         working-directory: '.'
+        env:
+          TF_VAR_ecr_repository_name: ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
         run: make terraform-init
-
-      - name: Load Environment Variables from .env
-        run: |
-          set -o allexport
-          source .env
-          set +o allexport
 
       - name: Terraform Plan
         id: plan
         working-directory: '.'
+        env:
+          TF_VAR_ecr_repository_name: ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
         run: make terraform-plan
