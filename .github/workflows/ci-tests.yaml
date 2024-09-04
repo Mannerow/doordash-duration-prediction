@@ -74,4 +74,4 @@ jobs:
       - name: Terraform Plan
         id: plan
         working-directory: './infrastructure'
-        run: terraform plan
+        run: terraform plan -input=false
