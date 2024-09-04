@@ -68,8 +68,8 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        working-directory: './infrastructure'
-        run: terraform init -reconfigure
+        working-directory: '.'
+        run: make terraform-init
 
       - name: Load Environment Variables from .env
         run: |
@@ -79,5 +79,5 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        working-directory: './infrastructure'
-        run: terraform plan -input=false
+        working-directory: '.'
+        run: make terraform-plan
