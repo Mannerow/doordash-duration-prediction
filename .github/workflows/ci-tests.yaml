@@ -72,10 +72,10 @@ jobs:
         run: terraform init -reconfigure
 
       - name: Load Environment Variables from .env
-      run: |
-        set -o allexport
-        source .env
-        set +o allexport
+        run: |
+          set -o allexport
+          source .env
+          set +o allexport
 
       - name: Terraform Plan
         id: plan
