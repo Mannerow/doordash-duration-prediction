@@ -68,12 +68,10 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        working-directory: '.'
-        run: make terraform-init
+        working-directory: './infrastructure'
+        run: terraform init -reconfigure
 
       - name: Terraform Plan
         id: plan
-        working-directory: '.'
-        run: make terraform-plan
-
-        #Comment for test
+        working-directory: './infrastructure'
+        run: terraform plan
