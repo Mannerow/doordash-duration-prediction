@@ -15,9 +15,18 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      # Step 2: Install Prefect
-      - name: Install Prefect
-        run: pip install prefect
+      # Step 2: Set up Python 3.9 and create a virtual environment
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Create Virtual Environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install prefect
 
       # Step 3: Configure AWS Credentials
       - name: Configure AWS Credentials
