@@ -37,32 +37,36 @@ jobs:
           echo "PREFECT_API_KEY=${{ secrets.PREFECT_API_KEY }}" >> .env
           echo "PREFECT_WORKSPACE=${{ secrets.PREFECT_WORKSPACE }}" >> .env
           echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}" >> .env
-          echo "TF_VAR_ECR_REPOSITORY_NAME=${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}" >> .env
-          echo "TF_VAR_AWS_REGION=${{ secrets.TF_VAR_AWS_REGION }}" >> .env
-          echo "TF_VAR_MLFLOW_MODELS_BUCKET=${{ secrets.TF_VAR_MLFLOW_MODELS_BUCKET }}" >> .env
-          echo "TF_VAR_PREDICTION_BUCKET=${{ secrets.TF_VAR_PREDICTION_BUCKET }}" >> .env
+          echo "TF_VAR_ecr_repository_name=${{ secrets.TF_VAR_ecr_repository_name }}" >> .env
+          echo "TF_VAR_aws_region=${{ secrets.TF_VAR_aws_region }}" >> .env
+          echo "TF_VAR_mlflow_models_bucket=${{ secrets.TF_VAR_mlflow_models_bucket }}" >> .env
+          echo "TF_VAR_prediction_bucket=${{ secrets.TF_VAR_prediction_bucket }}" >> .env
 
-      # Step 5: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
+      # Step 5: Debugging step to verify .env contents
+      - name: Display .env file contents for debugging
+        run: cat .env
+
+      # Step 6: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
       - name: Build Docker Image
         run: |
-          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest .
+          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ecr_repository_name }}:latest .
 
-      # Step 6: Log in to Amazon ECR
+      # Step 7: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-      # Step 7: Tag the Docker Image
+      # Step 8: Tag the Docker Image
       - name: Tag Docker Image
         run: |
-          docker tag ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
+          docker tag ${{ secrets.TF_VAR_ecr_repository_name }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 8: Push the Docker Image to ECR
+      # Step 9: Push the Docker Image to ECR
       - name: Push Docker Image to ECR
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 9: Run Docker Compose to bring up services
+      # Step 10: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
           docker compose up -d
