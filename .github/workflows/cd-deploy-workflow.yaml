@@ -67,6 +67,11 @@ jobs:
         run: |
           docker compose up -d
 
+      # Step 10: Follow Docker Compose logs
+      - name: Stream Docker Logs
+        run: |
+          docker compose logs -f
+
       # Final Step: Notify on Successful Deployment
       - name: Notify on Successful Deployment
         run: echo "Deployment completed successfully!"
