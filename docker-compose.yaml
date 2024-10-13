@@ -29,8 +29,8 @@ services:
       echo 'Logging in to Prefect Cloud' &&
       prefect cloud login --key $PREFECT_API_KEY --workspace $PREFECT_WORKSPACE &&
       echo 'Running Python flow script' &&
-      python run_flow.py
-      "
+      python run_flow.py &&
+      tail -f /dev/null"
     environment:
       - PREFECT_API_KEY=${PREFECT_API_KEY}
       - PREFECT_WORKSPACE=${PREFECT_WORKSPACE}
