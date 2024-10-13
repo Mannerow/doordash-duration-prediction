@@ -65,7 +65,7 @@ jobs:
       # Step 9: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
-          docker compose up
+          docker compose up -d
 
       # Final Step: Notify on Successful Deployment
       - name: Notify on Successful Deployment
