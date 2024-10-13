@@ -33,9 +33,6 @@ RUN apt-get update && \
     apt-get install -y docker-ce-cli && \
     apt-get clean
 
-# Install dos2unix
-RUN apt-get update && apt-get install -y dos2unix
-
 # Copy the current directory contents into the container at /app
 COPY . /app
 
