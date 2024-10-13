@@ -18,7 +18,10 @@ The objective of this project is to predict the delivery duration for DoorDash o
   - [🔄 Reproducability](#-reproducability)
   - [🚀✨ MLOps Best Practices](#-mlops-best-practices)
     - [Makefile](#makefile)
+      - [🛠 Installing Make and Pipenv](#-installing-make-and-pipenv)
+      - [📜 Makefile Commands Overview](#-makefile-commands-overview)
     - [Pre-Commit Hooks](#pre-commit-hooks)
+    - [🛠️ CI/CD Pipeline](#️-cicd-pipeline)
 
 ## 📊 Dataset
 
@@ -229,3 +232,30 @@ This command initializes the development environment by installing all necessary
 git add <files>
 git commit -m "Your commit message"
 ```
+
+### 🛠️ CI/CD Pipeline
+
+**Continuous Integration (CI)**
+
+Continuous Integration is a practice in software development where code changes are automatically tested and validated as soon as they are committed to the repository. This helps ensure that the newly integrated code works as expected and doesn't break existing functionality.
+
+For this project, I incorporated CI by setting up a GitHub Actions workflow that runs every time a pull request is made to the `main` branch. The workflow performs the following steps:
+
+- **Dependency Installation:** Installs required Python dependencies.
+- **Unit and Integration Testing:** Runs unit tests to validate that the code behaves as expected.
+- **Code Quality Checks:** Ensures that the code adheres to best practices by running tools like black and isort for formatting.
+- **Terraform Plan:** Executes Terraform to ensure that infrastructure changes are valid before applying them.
+
+This process helps maintain code quality and detect issues early in the development process.
+
+**Continuous Deployment (CD)**
+
+Continuous Deployment is the automated process of deploying your application to production after it passes the testing phase. In this project, I implemented CD to automate the deployment of the Dockerized application to AWS, specifically utilizing Amazon Elastic Container Registry (ECR) and Docker Compose.
+
+Whenever code is pushed to the main branch or manually triggered, the CD workflow performs the following tasks:
+
+- **Build the Docker Image:** Builds the Docker image using the application's Dockerfile.
+- **Push to ECR:** Tags the image and pushes it to the Amazon ECR repository.
+- **Run Docker Compose:** Brings up the required services by running docker compose up.
+
+This ensures that any updates to the code are quickly and reliably deployed to production without manual intervention.
