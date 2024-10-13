@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # This allows you to manually trigger the cd workflow
+  workflow_dispatch: # Allows manual triggering of the CD workflow
 
 jobs:
   deploy:
@@ -14,39 +14,37 @@ jobs:
       - name: Debugging step to check if workflow is triggered
         run: echo "Workflow is running!"
 
+      # Step 1: Checkout the repository
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # Load .env file
-      - name: Load environment variables from .env file
+      # Step 2: Install Docker Compose (if needed)
+      - name: Install Docker Compose
         run: |
-          set -o allexport
-          source .env || true
-          set +o allexport
+          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
 
+      # Step 3: Log in to AWS ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-      - name: Build and Tag Docker Image for App
+      # Step 4: Tag the current Docker image
+      - name: Tag Docker Image
         run: |
-          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest .
           docker tag ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
 
+      # Step 5: Push Docker image to ECR
       - name: Push Docker Image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
 
+      # Step 6: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
           docker compose up -d
 
+      # Final Step: Notify that deployment was successful
       - name: Notify on Successful Deployment
         run: echo "Deployment completed successfully!"
