@@ -23,10 +23,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 2: Create the kaggle.json file in the working directory (same level as Dockerfile)
+      # Step 2: Create the kaggle.json file in the working directory (same as Dockerfile)
       - name: Create kaggle.json
         run: |
-          echo '${{ secrets.KAGGLE_JSON }}' > .
+          echo '${{ secrets.KAGGLE_JSON }}' > kaggle.json
 
       # Step 3: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
       - name: Build Docker Image
@@ -53,6 +53,6 @@ jobs:
         run: |
           docker compose up -d
 
-      # Final Step: Notify that deployment was successful
+      # Final Step: Notify on Successful Deployment
       - name: Notify on Successful Deployment
         run: echo "Deployment completed successfully!"
