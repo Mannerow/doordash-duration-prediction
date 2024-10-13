@@ -15,7 +15,11 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      # Step 2: Configure AWS Credentials
+      # Step 2: Install Prefect
+      - name: Install Prefect
+        run: pip install prefect
+
+      # Step 3: Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -23,12 +27,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 3: Create the kaggle.json file in the working directory
+      # Step 4: Create the kaggle.json file in the working directory
       - name: Create kaggle.json
         run: |
           echo '${{ secrets.KAGGLE_JSON }}' > kaggle.json
 
-      # Step 4: Create a .env file for Docker Compose using the secrets
+      # Step 5: Create a .env file for Docker Compose using the secrets
       - name: Create .env file for Docker Compose
         run: |
           echo "MLFLOW_BACKEND_STORE_URI=${{ secrets.MLFLOW_BACKEND_STORE_URI }}" >> .env
@@ -42,33 +46,33 @@ jobs:
           echo "TF_VAR_mlflow_models_bucket=${{ secrets.TF_VAR_mlflow_models_bucket }}" >> .env
           echo "TF_VAR_prediction_bucket=${{ secrets.TF_VAR_prediction_bucket }}" >> .env
 
-      # Step 5: Build the Docker Image
-      - name: Build Docker Image
-        run: |
-          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ecr_repository_name }}:latest .
-
-      # Step 6: Log in to Amazon ECR
-      - name: Log in to Amazon ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-
-      # Step 7: Tag the Docker Image
-      - name: Tag Docker Image
-        run: |
-          docker tag ${{ secrets.TF_VAR_ecr_repository_name }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
-
-      # Step 8: Push the Docker Image to ECR
-      - name: Push Docker Image to ECR
-        run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
-
-      # Step to log in to Prefect Cloud using the API key non-interactively
+      # Step 6: Log in to Prefect Cloud
       - name: Log in to Prefect Cloud
         run: |
           prefect cloud login --key ${{ secrets.PREFECT_API_KEY }} --workspace ${{ secrets.PREFECT_WORKSPACE }}
 
-      # Step 9: Run Docker Compose in detached mode
-      - name: Run Docker Compose in detached mode
+      # Step 7: Build the Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ecr_repository_name }}:latest .
+
+      # Step 8: Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      # Step 9: Tag the Docker Image
+      - name: Tag Docker Image
+        run: |
+          docker tag ${{ secrets.TF_VAR_ecr_repository_name }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
+
+      # Step 10: Push the Docker Image to ECR
+      - name: Push Docker Image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
+
+      # Step 11: Run Docker Compose to bring up services
+      - name: Run Docker Compose
         run: |
           docker compose up -d
 
