@@ -62,10 +62,15 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 9: Run Docker Compose with a timeout (10 mins)
-      - name: Run Docker Compose with a timeout
+      # Step 9: Run Docker Compose in detached mode
+      - name: Run Docker Compose in detached mode
         run: |
-          timeout 600 docker compose up
+          docker compose up -d
+
+      # Step 10: Stream Docker Compose logs with a timeout (10 mins)
+      - name: Stream Docker Compose logs with a timeout
+        run: |
+          timeout 600 docker compose logs -f
 
       # Final Step: Notify on Successful Deployment
       - name: Notify on Successful Deployment
