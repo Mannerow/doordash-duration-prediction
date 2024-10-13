@@ -26,7 +26,7 @@ jobs:
       # Step 2: Create the kaggle.json file in the working directory (same level as Dockerfile)
       - name: Create kaggle.json
         run: |
-          echo '${{ secrets.KAGGLE_JSON }}' > /app/kaggle.json  # Assuming this matches your Dockerfile's COPY step
+          echo '${{ secrets.KAGGLE_JSON }}' > .
 
       # Step 3: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
       - name: Build Docker Image
