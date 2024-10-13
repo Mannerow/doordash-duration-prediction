@@ -23,14 +23,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 2: Create kaggle.json from GitHub Secret (inject during build)
-      - name: Create kaggle.json
+      # Step 2: Switch to root user and create kaggle.json
+      - name: Create kaggle.json as root
         run: |
+          sudo su -
           mkdir -p /root/.kaggle
           echo '${{ secrets.KAGGLE_JSON }}' > /root/.kaggle/kaggle.json
           chmod 600 /root/.kaggle/kaggle.json
 
-      # Step 3: Build the Docker Image
+      # Step 3: Build the Docker Image (Dockerfile handles all other COPY and permissions commands)
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile -t ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest .
