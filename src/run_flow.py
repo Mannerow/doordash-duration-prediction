@@ -113,8 +113,10 @@ def ml_workflow():
 
 # Serve the flow with a schedule
 if __name__ == "__main__":
+    # Serve the flow with a schedule, running every 10 minutes
+    print("Serving the flow with a schedule...")
     ml_workflow.serve(
         name="ml-workflow-deployment",
         parameters={},
-        interval=timedelta(hours=1).total_seconds(),  # Set the interval in seconds
+        interval=timedelta(minutes=10).total_seconds(),  # Run every 10 minutes
     )
