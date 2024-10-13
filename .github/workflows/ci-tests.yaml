@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: 3.9
 
-      # Python Cache,reuses dependencies if they haven't changed
+      # Python Cache, reuses dependencies if they haven't changed
       - name: Cache pip
         uses: actions/cache@v3
         with:
@@ -32,9 +32,20 @@ jobs:
         working-directory: '.'
         run: make setup
 
+      - name: Run Unit tests
+        working-directory: "."
+        run: make test
+
       - name: Run Quality tests
         working-directory: '.'
         run: make quality_checks
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Run Integration tests
         working-directory: '.'
@@ -46,22 +57,27 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.0.0
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: TF plan-stage
-        working-directory: '06-best-practices/code-practice'
-        run: make plan_stage
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-      - name: TF plan-prod
-        working-directory: '06-best-practices/code-practice'
-        run: make plan_prod
+      - name: Terraform Init
+        working-directory: '.'
+        env:
+          TF_VAR_ecr_repository_name: ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+        run: make terraform-init
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: '.'
+        env:
+          TF_VAR_ecr_repository_name: ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+        run: make terraform-plan
