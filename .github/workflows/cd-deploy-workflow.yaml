@@ -23,27 +23,34 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 2: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
+      # Step 2: Create kaggle.json from GitHub Secret (inject during build)
+      - name: Create kaggle.json
+        run: |
+          mkdir -p /root/.kaggle
+          echo '${{ secrets.KAGGLE_JSON }}' > /root/.kaggle/kaggle.json
+          chmod 600 /root/.kaggle/kaggle.json
+
+      # Step 3: Build the Docker Image
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile -t ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest .
 
-      # Step 3: Log in to Amazon ECR
+      # Step 4: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-      # Step 4: Tag the Docker Image
+      # Step 5: Tag the Docker Image
       - name: Tag Docker Image
         run: |
           docker tag ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
 
-      # Step 5: Push the Docker Image to ECR
+      # Step 6: Push the Docker Image to ECR
       - name: Push Docker Image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
 
-      # Step 6: Run Docker Compose to bring up services
+      # Step 7: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
           docker compose up -d
