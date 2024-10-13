@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # This allows you to manually trigger the workflow
+  workflow_dispatch: # This allows you to manually trigger the cd workflow
 
 jobs:
   deploy:
