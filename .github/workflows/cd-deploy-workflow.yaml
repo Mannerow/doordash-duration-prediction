@@ -23,7 +23,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 3: Create the kaggle.json file in the working directory (same as Dockerfile)
+      # Step 3: Create the kaggle.json file in the working directory
       - name: Create kaggle.json
         run: |
           echo '${{ secrets.KAGGLE_JSON }}' > kaggle.json
@@ -42,34 +42,30 @@ jobs:
           echo "TF_VAR_mlflow_models_bucket=${{ secrets.TF_VAR_mlflow_models_bucket }}" >> .env
           echo "TF_VAR_prediction_bucket=${{ secrets.TF_VAR_prediction_bucket }}" >> .env
 
-      # Step 5: Debugging step to verify .env contents
-      - name: Display .env file contents for debugging
-        run: cat .env
-
-      # Step 6: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
+      # Step 5: Build the Docker Image
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile -t ${{ secrets.TF_VAR_ecr_repository_name }}:latest .
 
-      # Step 7: Log in to Amazon ECR
+      # Step 6: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-      # Step 8: Tag the Docker Image
+      # Step 7: Tag the Docker Image
       - name: Tag Docker Image
         run: |
           docker tag ${{ secrets.TF_VAR_ecr_repository_name }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 9: Push the Docker Image to ECR
+      # Step 8: Push the Docker Image to ECR
       - name: Push Docker Image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 10: Run Docker Compose to bring up services
+      # Step 9: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
-          docker compose up -d
+          docker compose up
 
       # Final Step: Notify on Successful Deployment
       - name: Notify on Successful Deployment
