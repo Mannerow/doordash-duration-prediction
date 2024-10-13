@@ -239,7 +239,7 @@ git commit -m "Your commit message"
 
 Continuous Integration is a practice in software development where code changes are automatically tested and validated as soon as they are committed to the repository. This helps ensure that the newly integrated code works as expected and doesn't break existing functionality.
 
-For this project, I incorporated CI by setting up a GitHub Actions workflow that runs every time a pull request is made to the `main` branch. The workflow performs the following steps:
+For this project, CI was incorporated by setting up a GitHub Actions workflow that runs every time a pull request is made to the `main` branch. The workflow performs the following steps:
 
 - **Dependency Installation:** Installs required Python dependencies.
 - **Unit and Integration Testing:** Runs unit tests to validate that the code behaves as expected.
@@ -250,7 +250,7 @@ This process helps maintain code quality and detect issues early in the developm
 
 **Continuous Deployment (CD)**
 
-Continuous Deployment is the automated process of deploying your application to production after it passes the testing phase. In this project, I implemented CD to automate the deployment of the Dockerized application to AWS, specifically utilizing Amazon Elastic Container Registry (ECR) and Docker Compose.
+Continuous Deployment is the automated process of deploying your application to production after it passes the testing phase. In this project, CD was implemented to automate the deployment of the Dockerized application to AWS, specifically utilizing Amazon Elastic Container Registry (ECR) and Docker Compose.
 
 Whenever code is pushed to the main branch or manually triggered, the CD workflow performs the following tasks:
 
