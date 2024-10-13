@@ -1,8 +1,10 @@
 name: CD_DEPLOY
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch: # This allows you to manually trigger the workflow
 
 jobs:
   deploy:
