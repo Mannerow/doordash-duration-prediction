@@ -21,13 +21,6 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Create Virtual Environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install prefect
-
       # Step 3: Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -55,33 +48,27 @@ jobs:
           echo "TF_VAR_mlflow_models_bucket=${{ secrets.TF_VAR_mlflow_models_bucket }}" >> .env
           echo "TF_VAR_prediction_bucket=${{ secrets.TF_VAR_prediction_bucket }}" >> .env
 
-      # Step 6: Log in to Prefect Cloud (make sure virtual environment is active)
-      - name: Log in to Prefect Cloud
-        run: |
-          source venv/bin/activate
-          prefect cloud login --key ${{ secrets.PREFECT_API_KEY }} --workspace ${{ secrets.PREFECT_WORKSPACE }}
-
-      # Step 7: Build the Docker Image
+      # Step 6: Build the Docker Image
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile -t ${{ secrets.TF_VAR_ecr_repository_name }}:latest .
 
-      # Step 8: Log in to Amazon ECR
+      # Step 7: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-      # Step 9: Tag the Docker Image
+      # Step 8: Tag the Docker Image
       - name: Tag Docker Image
         run: |
           docker tag ${{ secrets.TF_VAR_ecr_repository_name }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 10: Push the Docker Image to ECR
+      # Step 9: Push the Docker Image to ECR
       - name: Push Docker Image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
-      # Step 11: Run Docker Compose to bring up services
+      # Step 10: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
           docker compose up -d
