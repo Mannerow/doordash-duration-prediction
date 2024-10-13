@@ -55,9 +55,10 @@ jobs:
           echo "TF_VAR_mlflow_models_bucket=${{ secrets.TF_VAR_mlflow_models_bucket }}" >> .env
           echo "TF_VAR_prediction_bucket=${{ secrets.TF_VAR_prediction_bucket }}" >> .env
 
-      # Step 6: Log in to Prefect Cloud
+      # Step 6: Log in to Prefect Cloud (make sure virtual environment is active)
       - name: Log in to Prefect Cloud
         run: |
+          source venv/bin/activate
           prefect cloud login --key ${{ secrets.PREFECT_API_KEY }} --workspace ${{ secrets.PREFECT_WORKSPACE }}
 
       # Step 7: Build the Docker Image
