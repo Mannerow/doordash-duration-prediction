@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debugging step to check if workflow is triggered
+        run: echo "Workflow is running!"
+
       - name: Checkout Repo
         uses: actions/checkout@v3
 
