@@ -62,15 +62,15 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ecr_repository_name }}:latest
 
+      # Step to log in to Prefect Cloud using the API key non-interactively
+      - name: Log in to Prefect Cloud
+        run: |
+          prefect cloud login --key ${{ secrets.PREFECT_API_KEY }} --workspace ${{ secrets.PREFECT_WORKSPACE }}
+
       # Step 9: Run Docker Compose in detached mode
       - name: Run Docker Compose in detached mode
         run: |
           docker compose up -d
-
-      # Step 10: Stream Docker Compose logs with a timeout (10 mins)
-      - name: Stream Docker Compose logs with a timeout
-        run: |
-          timeout 600 docker compose logs -f
 
       # Final Step: Notify on Successful Deployment
       - name: Notify on Successful Deployment
