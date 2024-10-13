@@ -1,0 +1,47 @@
+name: CD_DEPLOY
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Load .env file
+      - name: Load environment variables from .env file
+        run: |
+          set -o allexport
+          source .env || true
+          set +o allexport
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build and Tag Docker Image for App
+        run: |
+          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest .
+          docker tag ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
+
+      - name: Push Docker Image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
+
+      - name: Run Docker Compose
+        run: |
+          docker compose up -d
+
+      - name: Notify on Successful Deployment
+        run: echo "Deployment completed successfully!"
