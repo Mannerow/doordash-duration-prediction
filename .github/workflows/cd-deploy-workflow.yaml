@@ -23,23 +23,36 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 2: Create the kaggle.json file in the runner environment
+      # Step 2: Create the kaggle.json file in the working directory (same level as Dockerfile)
       - name: Create kaggle.json
         run: |
-          mkdir -p /root/.kaggle
-          echo '${{ secrets.KAGGLE_JSON }}' > kaggle.json
+          echo '${{ secrets.KAGGLE_JSON }}' > /app/kaggle.json  # Assuming this matches your Dockerfile's COPY step
 
-      # Step 3: Log in to Amazon ECR
+      # Step 3: Build the Docker Image (this handles all COPY and permissions commands in Dockerfile)
+      - name: Build Docker Image
+        run: |
+          docker build -f Dockerfile -t ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest .
+
+      # Step 4: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-      # Step 4: Run Docker Compose with volume mount for kaggle.json
+      # Step 5: Tag the Docker Image
+      - name: Tag Docker Image
+        run: |
+          docker tag ${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
+
+      # Step 6: Push the Docker Image to ECR
+      - name: Push Docker Image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.TF_VAR_ECR_REPOSITORY_NAME }}:latest
+
+      # Step 7: Run Docker Compose to bring up services
       - name: Run Docker Compose
         run: |
-          docker compose up -d --build
-          docker cp kaggle.json $(docker-compose ps -q app):/root/.kaggle/kaggle.json
+          docker compose up -d
 
-      # Final Step: Notify on Successful Deployment
+      # Final Step: Notify that deployment was successful
       - name: Notify on Successful Deployment
         run: echo "Deployment completed successfully!"
