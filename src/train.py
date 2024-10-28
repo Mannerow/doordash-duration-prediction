@@ -14,7 +14,6 @@ Usage:
 RANDOM_STATE = 42
 
 import os
-import pickle
 
 import click
 import mlflow
@@ -35,6 +34,7 @@ mlflow.set_experiment("model-train")
     help="Location where the processed DoorDash data is saved",
 )
 def run_train(data_path: str):
+    """Run flow."""
     models = {
         "LinearRegression": LinearRegression(),
         "XGBRegressor": XGBRegressor(

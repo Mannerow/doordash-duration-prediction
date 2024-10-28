@@ -38,3 +38,19 @@ repos:
         entry: pylint
         language: python
         types: [python]
+        additional_dependencies:
+          - click
+          - pandas
+          - kaggle
+          - scikit-learn
+          - mlflow
+          - numpy
+          - hyperopt
+          - xgboost
+          - psycopg
+          - python-dotenv
+          - evidently
+          - boto3
+          - botocore
+          - scipy
+          - prefect

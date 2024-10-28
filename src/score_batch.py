@@ -1,6 +1,6 @@
+"""Scores batch and saves to S3"""
+
 import os
-import pickle
-import sys
 import uuid
 
 import boto3
@@ -13,7 +13,6 @@ from botocore.exceptions import ClientError
 # Load environment variables
 from dotenv import load_dotenv
 from mlflow.tracking import MlflowClient
-from scipy.sparse import csr_matrix
 
 import utils
 
@@ -26,6 +25,7 @@ mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000"
 
 
 def generate_uuids(n):
+    """Generates trip IDs"""
     trip_ids = []
     for i in range(n):
         trip_ids.append(str(uuid.uuid4()))
@@ -33,6 +33,7 @@ def generate_uuids(n):
 
 
 def load_best_model(model_bucket, model_name, experiment_name):
+    """Loads best model from MLflow"""
     client = MlflowClient()
 
     # Get experiment ID from the experiment name
@@ -62,6 +63,7 @@ def load_best_model(model_bucket, model_name, experiment_name):
 
 
 def save_results(df, y_pred, y_test, run_id, output_file):
+    """Saves the df to a parquet file in output file location."""
     trip_ids = generate_uuids(df.shape[0])
     results_df = pd.DataFrame(
         {
@@ -85,6 +87,7 @@ def save_results(df, y_pred, y_test, run_id, output_file):
 
 
 def create_s3_bucket(bucket_name, region=None):
+    """Creates S3 bucket if it doesn't exist."""
     # Initialize a session using Amazon S3
     s3_client = boto3.client("s3", region_name=region)
 
@@ -114,6 +117,7 @@ def create_s3_bucket(bucket_name, region=None):
 def apply_model(
     test_data_path: str, model_bucket: str, model_name: str, dest_bucket: str
 ):
+    """Applies the predictions."""
     print(
         f'Reading the prepared data from {os.path.join(test_data_path, "test.pkl")}...'
     )
@@ -163,6 +167,7 @@ def apply_model(
     help="Location where the resulting files will be saved",
 )
 def run(test_data_path: str, model_bucket: str, model_name: str, dest_bucket: str):
+    """Runs flow."""
     apply_model(test_data_path, model_bucket, model_name, dest_bucket)
 
 

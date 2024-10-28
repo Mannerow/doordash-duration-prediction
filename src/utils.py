@@ -1,3 +1,5 @@
+"""Contains utility functions."""
+
 import pickle
 
 import pandas as pd
@@ -5,16 +7,19 @@ from scipy.sparse import csr_matrix
 
 
 def load_pickle(filename: str):
+    """Load pickle from file."""
     with open(filename, "rb") as f_in:
         return pickle.load(f_in)
 
 
 def dump_pickle(obj, filename: str):
+    """Dump pickle to file."""
     with open(filename, "wb") as f_out:
         return pickle.dump(obj, f_out)
 
 
 def decode_dataframe(dv, df):
+    """Decode a DF from Sparse --> original"""
     # Ensure df is a DataFrame, not a csr_matrix
     if isinstance(df, csr_matrix):
         # Convert sparse matrix to dense matrix

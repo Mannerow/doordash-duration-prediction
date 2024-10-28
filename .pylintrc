@@ -1,2 +1,14 @@
 [MESSAGES CONTROL]
-disable=line-too-long, wrong-import-position, invalid-name, no-value-for-parameter, logging-fstring-interpolation, unused-argument, too-many-locals
+disable=
+    line-too-long,
+    wrong-import-position,
+    invalid-name,
+    no-value-for-parameter,
+    logging-fstring-interpolation,
+    unused-argument,
+    too-many-locals,
+    unused-variable,
+    redefined-outer-name,
+    broad-exception-raised,
+    duplicate-code,
+    not-context-manager
