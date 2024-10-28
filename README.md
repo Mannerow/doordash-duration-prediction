@@ -1,11 +1,17 @@
+[toc]
 # doordash-duration-prediction
 
 ## 📄 Problem Description
 
 The objective of this project is to predict the delivery duration for DoorDash orders using historical data. This involves developing a machine learning model that can accurately forecast the time it will take for a delivery to reach the customer from the moment an order is placed. The project will leverage MLOps principles to ensure robust experimentation, model tracking, monitoring, infrastructure provisioning, and automation throughout the development and deployment lifecycle.
 
+## 🗺️ MLOps Flow Diagram
+
+![MLOps Flow Diagram](images/MLOpsDiagram.png)
+
 - [doordash-duration-prediction](#doordash-duration-prediction)
   - [📄 Problem Description](#-problem-description)
+  - [🗺️ MLOps Flow Diagram](#️-mlops-flow-diagram)
   - [📊 Dataset](#-dataset)
   - [🔒 Authentication](#-authentication)
   - [⚙️ Installation](#️-installation)
