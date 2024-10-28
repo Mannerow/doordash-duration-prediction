@@ -1,4 +1,5 @@
-import pickle
+"""Unit Tests"""
+
 from unittest.mock import mock_open, patch
 
 import pandas as pd
@@ -6,6 +7,8 @@ from scipy.sparse import csr_matrix
 from sklearn.feature_extraction import DictVectorizer
 
 from src.utils import decode_dataframe, dump_pickle, load_pickle
+
+"""Tests load_pickle function using a mock."""
 
 
 def test_load_pickle():
@@ -28,6 +31,9 @@ def test_load_pickle():
             assert result == expected_data
 
 
+"""Tests dump_pickle function"""
+
+
 def test_dump_pickle():
     # The data that we expect to be saved into the pickle file
     data_to_save = {"key": "value"}
@@ -47,6 +53,9 @@ def test_dump_pickle():
 
             # Assert that the file handle provided by mock_open was used to write data
             assert mock_pickle_dump.called
+
+
+"""Tests decode dataframe"""
 
 
 def test_decode_dataframe_dense():
@@ -98,6 +107,9 @@ def test_decode_dataframe_dense():
     pd.testing.assert_frame_equal(result, expected_df)
 
 
+"""Tests sparse matrix"""
+
+
 def test_decode_dataframe_sparse():
     # Sample sparse matrix and feature names
     sparse_data = csr_matrix([[1, 0, 3, 1200], [0, 1, 2, 2400]])
@@ -146,7 +158,9 @@ def test_decode_dataframe_sparse():
     pd.testing.assert_frame_equal(result, expected_df)
 
 
-# Tests that any missing columns from the dataframe are added to the output and filled with default values
+"""Tests that any missing columns from DF are added to output and filled with default values"""
+
+
 def test_decode_dataframe_missing_column():
     # Sample DataFrame missing 'total_items' and other columns
     data = {

@@ -31,7 +31,7 @@ quality_checks:
 	pipenv run isort . && \
 	pipenv run black .
 	# Uncomment the next line to include pylint checks
-	# pipenv run pylint --recursive=y .
+	pipenv run pylint --recursive=y .
 
 # Terraform commands
 
