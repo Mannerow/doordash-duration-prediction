@@ -57,16 +57,6 @@ cp .env.template .env
 
 Create an S3 bucket and update the `'/infrastructure.main.tf'` file to reflect the new bucket.
 
-**4. Windows Users — Prevent Line Ending Issues with Git:**
-
-If you're using Windows, you may encounter issues with line endings being automatically converted from `LF` (Unix) to `CRLF` (Windows) when checking out files. This can cause problems with script execution in Docker.
-
-To prevent this, configure Git to ensure scripts like `start.sh` maintain the correct LF line endings by running the following command in Git Bash or the command prompt:
-
-```bash
-git config --global core.autocrlf input
-```
-
 ## 🚀 Running the Project
 
 To run the project, simply run the following command:
