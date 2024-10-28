@@ -1,6 +1,6 @@
+"""Reads the data, performs feature engineering, and splits data into training/testing sets."""
+
 import os
-import pickle
-import zipfile
 
 import click
 import pandas as pd
@@ -13,6 +13,7 @@ import utils
 
 
 def read_dataframe(raw_data_path: str):
+    """Reads dataframe. Just uses half the data"""
     csv_file_path = os.path.join(raw_data_path, "historical_data.csv")
 
     # Load the CSV file into a pandas DataFrame
@@ -103,6 +104,7 @@ def vectorize_and_split(train_dicts, target):
 
 
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    """Handles categorical data and drops nulls"""
     # Define imputer for numerical columns
     imputer = SimpleImputer(strategy="mean")
     numerical_columns = df.select_dtypes(include=["number"]).columns
@@ -129,8 +131,8 @@ def preprocess(df: pd.DataFrame, target: str = "delivery_duration"):
     return X_train, X_val, X_test, y_train, y_val, y_test, dv
 
 
-# Downloads raw data from Kaggle to 'raw_data_path'
 def download_data(raw_data_path: str):
+    """Downloads raw data from Kaggle"""
     # Initialize the Kaggle API
     api = KaggleApi()
     api.authenticate()
@@ -159,6 +161,7 @@ def download_data(raw_data_path: str):
     help="Location where the resulting files will be saved",
 )
 def run_data_prep(raw_data_path: str, dest_path: str):
+    """Runs data prep pipeline and dumps the pickles locally."""
 
     download_data(raw_data_path=raw_data_path)
 

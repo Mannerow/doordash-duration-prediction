@@ -1,17 +1,13 @@
-import datetime
+"""Uses Evidently and PostgresSQL to monitor and store metrics."""
+
 import logging
 import os
 import random
-import sys
-import uuid
 
-import boto3
 import click
-import joblib
 import mlflow.pyfunc
 import pandas as pd
 import psycopg
-from botocore.exceptions import ClientError
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -26,7 +22,6 @@ from evidently.metrics import (
 # Monitoring Imports
 from evidently.report import Report
 from mlflow.tracking import MlflowClient
-from scipy.sparse import csr_matrix
 
 import utils
 
@@ -52,6 +47,7 @@ target = "delivery_duration"
 
 
 def init_mlflow():
+    """Sets MLFlow Tracking URI"""
     logging.info("Initializing MLflow...")
     load_dotenv()  # This will load all the env variables from the .env file
     # Set the MLflow tracking URI
@@ -60,6 +56,7 @@ def init_mlflow():
 
 
 def load_best_model(best_model_bucket, best_model_name, experiment_name):
+    """Loads best model from MLFlow"""
     logging.info("Loading best model from MLflow...")
     client = MlflowClient()
     # Get experiment ID from the experiment name
@@ -84,7 +81,7 @@ def load_best_model(best_model_bucket, best_model_name, experiment_name):
     logging.info(f"Logged Model = {logged_model}")
     model = mlflow.pyfunc.load_model(logged_model)
     logging.info("Best model loaded.")
-    return model, run_id
+    return model
 
 
 def setup_monitoring(
@@ -93,6 +90,7 @@ def setup_monitoring(
     best_model_name: str,
     experiment_name: str,
 ):
+    """Sets up monitoring, returns current_data and reference data."""
     logging.info("Setting up monitoring...")
     init_mlflow()
     # Reference Data
@@ -102,9 +100,8 @@ def setup_monitoring(
     )
     X_test, y_test = utils.load_pickle(os.path.join(test_data_path, "test.pkl"))
     logging.info(f"Loading the model from bucket={best_model_bucket}...")
-    model, run_id = load_best_model(best_model_bucket, best_model_name, experiment_name)
+    model = load_best_model(best_model_bucket, best_model_name, experiment_name)
     logging.info("Applying the model...")
-    # X_test = X_test.fillna(0)
 
     y_pred = model.predict(X_test)
     y_val_pred = model.predict(X_val)
@@ -157,6 +154,7 @@ def setup_monitoring(
 
 
 def prep_db():
+    """Makes connection to PostgresSQL"""
     logging.info("Preparing database...")
     try:
         # Connect to PostgreSQL and create the database and table if they do not exist
@@ -176,19 +174,20 @@ def prep_db():
         raise
 
 
-# Function to generate daily timestamps between two dates
 def generate_daily_timestamps(start_date, end_date):
+    """generate daily timestamps between two dates"""
     return pd.date_range(start=start_date, end=end_date, freq="D")
 
 
-# Function to filter data by day
 def filter_data_by_day(data, day):
+    """filter data by day"""
     start_time = day.replace(hour=0, minute=0, second=0, microsecond=0)
     end_time = start_time + pd.Timedelta(days=1)
     return data[(data["created_at"] >= start_time) & (data["created_at"] < end_time)]
 
 
 def calculate_metrics_postgresql(current_data, reference_data, report, column_mapping):
+    """Calculates and logs metrics"""
     logging.info("Calculating metrics and storing in PostgreSQL...")
 
     # Ensure date columns exist in the data and convert to datetime
@@ -275,6 +274,7 @@ def run(
     best_model_name: str,
     experiment_name: str,
 ):
+    """Runs the flow"""
     try:
         logging.info("Starting the run process...")
         prep_db()

@@ -14,7 +14,6 @@ Usage:
 RANDOM_STATE = 42
 
 import os
-import pickle
 
 import click
 import mlflow
@@ -43,6 +42,7 @@ mlflow.set_experiment("model-hyperopt")
     help="Number of parameter evaluations for the optimizer to explore",
 )
 def run_optimization(data_path: str, num_trials: int):
+    """runs the optimizer"""
 
     X_train, y_train = utils.load_pickle(os.path.join(data_path, "train.pkl"))
     X_val, y_val = utils.load_pickle(os.path.join(data_path, "val.pkl"))

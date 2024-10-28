@@ -8,10 +8,9 @@ from sklearn.feature_extraction import DictVectorizer
 
 from src.utils import decode_dataframe, dump_pickle, load_pickle
 
-"""Tests load_pickle function using a mock."""
-
 
 def test_load_pickle():
+    """Tests load_pickle function using a mock."""
     # Simulates the content in the pickle file
     expected_data = {"key": "value"}
 
@@ -31,10 +30,8 @@ def test_load_pickle():
             assert result == expected_data
 
 
-"""Tests dump_pickle function"""
-
-
 def test_dump_pickle():
+    """Tests dump_pickle function"""
     # The data that we expect to be saved into the pickle file
     data_to_save = {"key": "value"}
 
@@ -55,10 +52,8 @@ def test_dump_pickle():
             assert mock_pickle_dump.called
 
 
-"""Tests decode dataframe"""
-
-
 def test_decode_dataframe_dense():
+    """Tests decode dataframe"""
     # Sample dense DataFrame
     data = {
         "market_id": [1, 2],
@@ -107,10 +102,8 @@ def test_decode_dataframe_dense():
     pd.testing.assert_frame_equal(result, expected_df)
 
 
-"""Tests sparse matrix"""
-
-
 def test_decode_dataframe_sparse():
+    """Tests sparse matrix"""
     # Sample sparse matrix and feature names
     sparse_data = csr_matrix([[1, 0, 3, 1200], [0, 1, 2, 2400]])
     feature_names = [
@@ -158,10 +151,8 @@ def test_decode_dataframe_sparse():
     pd.testing.assert_frame_equal(result, expected_df)
 
 
-"""Tests that any missing columns from DF are added to output and filled with default values"""
-
-
 def test_decode_dataframe_missing_column():
+    """Tests that any missing columns from DF are added to output and filled with default values"""
     # Sample DataFrame missing 'total_items' and other columns
     data = {
         "market_id": [1],

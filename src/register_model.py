@@ -1,7 +1,7 @@
-import os
-import pickle
+"""Analyzes models based on performance metrics, then registers best model to MLFlow"""
 
-import boto3
+import os
+
 import click
 import mlflow
 from dotenv import load_dotenv
@@ -24,6 +24,7 @@ mlflow.set_experiment(BEST_MODELS_EXPERIMENT_NAME)
 
 
 def train_and_log_model(data_path, params):
+    """Trains models and logs to MLFlow"""
     X_train, y_train = utils.load_pickle(os.path.join(data_path, "train.pkl"))
     X_val, y_val = utils.load_pickle(os.path.join(data_path, "val.pkl"))
     X_test, y_test = utils.load_pickle(os.path.join(data_path, "test.pkl"))
@@ -70,7 +71,7 @@ def train_and_log_model(data_path, params):
     help="Number of top models that need to be evaluated to decide which one to promote",
 )
 def run_register_model(data_path: str, top_n: int):
-
+    """Loads best model and registers it."""
     client = MlflowClient()
 
     # Retrieve the top_n model runs and log the models/
