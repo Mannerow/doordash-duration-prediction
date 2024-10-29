@@ -75,7 +75,7 @@ This command will start a multi-container Docker project, setting up and startin
 
 ## 🌐 Viewing Prefect Cloud
 
-The app service provides a link [https://app.prefect.cloud/auth/resume](https://app.prefect.cloud/auth/resume) to Prefect Cloud. Open this link to access the Prefect Cloud UI, which offers detailed insights into deployments and previous runs. While the deployment is scheduled to run every 10 minutes, you can manually initiate a run by clicking 'Run' for immediate execution.
+The app service provides a link [https://app.prefect.cloud/auth/resume](https://app.prefect.cloud/auth/resume) to Prefect Cloud. Open this link to access the Prefect Cloud UI, which offers detailed insights into deployments and previous runs. While the deployment is scheduled to run every 30 minutes, you can manually initiate a run by clicking 'Run' for immediate execution.
 
 ![Prefect Cloud UI](images/prefect.png)
 
@@ -109,7 +109,7 @@ This Bash script automates the setup and deployment process for the project. It 
 
 **`run_flow.py`**
 
-This script initiates and executes the Prefect flow, orchestrating the entire machine learning pipeline from data preprocessing to model registration. It ensures each step is executed sequentially and correctly, running the pipeline on a 10 minute schedule.
+This script initiates and executes the Prefect flow, orchestrating the entire machine learning pipeline from data preprocessing to model registration. It ensures each step is executed sequentially and correctly, running the pipeline on a 30 minute schedule.
 
 **`data_preprocess.py`**
 

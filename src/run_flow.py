@@ -56,7 +56,7 @@ def run_monitor_metrics():
 
 @flow(log_prints=True)
 def ml_workflow():
-    """Runs the flow and serves every 10 mins."""
+    """Runs the flow and serves every 30 mins."""
     print("🔄 Preprocessing the data...")
     data_preprocess_result = run_data_preprocess()
 
@@ -84,10 +84,10 @@ def ml_workflow():
 
 # Serve the flow with a schedule
 if __name__ == "__main__":
-    # Serve the flow with a schedule, running every 10 minutes
+    # Serve the flow with a schedule, running every 30 minutes
     print("Serving the flow with a schedule...")
     ml_workflow.serve(
         name="ml-workflow-deployment",
         parameters={},
-        interval=timedelta(minutes=10).total_seconds(),  # Run every 10 minutes
+        interval=timedelta(minutes=30).total_seconds(),  # Run every 30 minutes
     )
